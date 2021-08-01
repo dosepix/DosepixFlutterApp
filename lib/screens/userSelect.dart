@@ -1,4 +1,4 @@
-import 'package:dosepix/models/dosimeter.dart';
+import 'package:dosepix/models/bluetooth.dart';
 import 'package:dosepix/screens/userCreate.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -16,9 +16,16 @@ class UserSelect extends StatelessWidget {
     var registeredUsers = context.watch<UserModel>();
     var activeUsers = context.watch<ActiveUserModel>();
     var measurements = context.watch<MeasurementModel>();
-    final dosimeterArgs = ModalRoute.of(context)!.settings.arguments as DosimeterArguments;
+    var measurementCurrent = context.watch<MeasurementCurrent>();
+    // final deviceArgs = ModalRoute.of(context)!.settings.arguments as DeviceArguments;
 
-    return Scaffold(
+    return WillPopScope(
+      // If selection is aborted, reset user for current measurement
+      onWillPop: () {
+        measurementCurrent.userId = NO_USER;
+        return Future.value(true);
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: Text('Select user'),
       ),
@@ -42,7 +49,9 @@ class UserSelect extends StatelessWidget {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       body: _buildListViewOfUsers(context,
-          registeredUsers, activeUsers, measurements, dosimeterArgs.dosimeterId),
+          registeredUsers, activeUsers, measurements,
+          measurementCurrent),
+      ),
     );
   }
 
@@ -51,7 +60,7 @@ class UserSelect extends StatelessWidget {
       UserModel registeredUsers,
       ActiveUserModel activeUsers,
       MeasurementModel measurements,
-      int dosimeterId) {
+      MeasurementCurrent current) {
     List<ListTile> tiles = <ListTile>[];
     // Existing users
     if(registeredUsers.users.isNotEmpty) {
@@ -64,27 +73,13 @@ class UserSelect extends StatelessWidget {
             onTap: () {
               // TODO: Check if already added!
               activeUsers.add(user);
+              print(current.userId);
+              current.userId = user.id;
 
-              // Create a measurement
-              measurements.addNew(
-                name: "",
-                userId: user.id,
-                dosimeterId: dosimeterId,
+              Navigator.pushNamed(
+                context,
+                '/screen/dosimeterSelect',
               );
-
-              // Back to dosimeter select page
-              Navigator.pop(context);
-
-              // TODO: Just for testing, exchange with real data
-              // Listen to stream
-              DataStream().randomDose(Duration(seconds: 1)).listen((value) {
-                // activeUsers.users[registeredUsers.users.indexOf(user)].a
-                measurements.measurements.last.doseData.add(value);
-              }
-              );
-
-              // Back to measurement page
-              Navigator.pop(context);
             },
           )
         );

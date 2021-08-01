@@ -1,3 +1,4 @@
+/* DEBUG data stream */
 import 'package:flutter/material.dart';
 import 'dart:math';
 
@@ -6,10 +7,10 @@ class DataStream extends StatelessWidget {
   final Random _random = Random();
   final _stop = false;
 
-  Stream<double> randomDose(Duration interval) async* {
+  Stream<List<int>> randomDose(Duration interval) async* {
     while(!_stop) {
       await Future.delayed(interval);
-      yield _random.nextDouble() * 10.0;
+      yield [(_random.nextDouble() * 255.0).toInt()];
     }
   }
 

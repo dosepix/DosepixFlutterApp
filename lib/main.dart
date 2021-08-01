@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_blue/flutter_blue.dart';
 import 'package:provider/provider.dart';
 import 'navigationDrawer/navigationDrawer.dart';
 
@@ -7,10 +8,12 @@ import 'navigationDrawer/navigationDrawer.dart';
 import 'package:dosepix/models/user.dart';
 import 'package:dosepix/models/dosimeter.dart';
 import 'package:dosepix/models/measurement.dart';
+import 'package:dosepix/models/bluetooth.dart';
 
 // Screens
 import 'screens/home.dart';
 import 'screens/measure.dart';
+import 'screens/measInfo.dart';
 
 import 'package:dosepix/screens/dosimeterSelect.dart';
 import 'package:dosepix/screens/userSelect.dart';
@@ -28,7 +31,17 @@ int randomNum(min, max) {
 class MyApp extends StatefulWidget {
   MyApp({Key? key}) : super(key: key);
   final appTitle = "Dosepix demo";
+
+  // Instantiate models here to initialize them
   final UserModel userModel = UserModel();
+
+  // Model to store current measurement data
+  final MeasurementCurrent measurementCurrent =
+    MeasurementCurrent(
+      userId: NO_USER,
+      dosimeterId: NO_DOSIMETER,
+      deviceId: NO_DEVICE,
+    );
 
   @override
   _MyAppState createState() => _MyAppState();
@@ -39,7 +52,15 @@ class _MyAppState extends State<MyApp> {
     super.initState();
 
     // TODO: Load data from a database
-    widget.userModel.addNew(fullName: "Flori Beißer", userName: "DerAlteKrierger", email: "test.mail");
+    widget.userModel.addNew(fullName: "Flori Beißer", userName: "DerAlteKrieger", email: "test.mail");
+    widget.userModel.addNew(fullName: "Flori Beißer", userName: "DerAlteKrieger2", email: "test.mail");
+
+    // Disconnect already connected dosimeters
+    FlutterBlue.instance.connectedDevices.then((devices) {
+      for (BluetoothDevice device in devices) {
+        device.disconnect();
+      }
+    });
   }
 
   @override
@@ -58,14 +79,25 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider<MeasurementModel>(
           create: (context) => MeasurementModel(),
         ),
+        ChangeNotifierProvider<BluetoothModel>(
+          create: (context) => BluetoothModel(),
+        ),
+        ChangeNotifierProvider<DosimeterModel>(
+          create: (context) => DosimeterModel(),
+        ),
+        ChangeNotifierProvider<MeasurementCurrent>(
+          create: (context) => widget.measurementCurrent,
+        ),
       ],
       child: MaterialApp(
         title: widget.appTitle,
         home: MainPage(title: "Title"),
         routes: {
+          '/screen/measure': (context) => Measure(),
           '/screen/dosimeterSelect': (context) => DosimeterSelect(),
           '/screen/userSelect': (context) => UserSelect(),
           '/screen/userCreate': (context) => UserCreate(),
+          '/screen/measInfo': (context) => MeasInfo(),
         },
       ),
     );
@@ -81,6 +113,11 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
+  @override void initState() {
+    super.initState();
+
+  }
+
   @override
   Widget build(BuildContext context) {
     // return Home();

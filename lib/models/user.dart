@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'dart:math';
 
+const int NO_USER = -1;
+
 @immutable
 class UserType {
   final int id;
@@ -30,6 +32,11 @@ class UserType {
     required this.totalDose,
     required this.password
   });
+}
+
+class UserArguments {
+  final int userId;
+  UserArguments(this.userId);
 }
 
 class UserModel extends ChangeNotifier {
@@ -64,6 +71,10 @@ class UserModel extends ChangeNotifier {
   void remove(UserType user) {
     _users.remove(user);
     notifyListeners();
+  }
+
+  UserType getUserFromId(int id) {
+    return _users[ids.indexOf(id)];
   }
 }
 
