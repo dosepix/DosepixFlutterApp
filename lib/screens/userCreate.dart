@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 // Models
 import 'package:dosepix/models/user.dart';
 
+import 'package:dosepix/database/databaseHandler.dart';
+
 class UserCreate extends StatelessWidget {
   UserCreate({Key? key}) : super(key: key);
   bool _validate = false;
@@ -13,6 +15,7 @@ class UserCreate extends StatelessWidget {
   Widget build(BuildContext context) {
     // Get registered users
     var registeredUsers = context.watch<UserModel>();
+    DoseDatabase doseDatabase = Provider.of<DoseDatabase>(context);
 
     // Build inputs
     Map<String, String> formFieldNames = {'fullName': 'Full name',
@@ -78,11 +81,24 @@ class UserCreate extends StatelessWidget {
                 }
 
                 print(inputs);
+                // Via internal system
+                /*
                 registeredUsers.addNew(
                   fullName: inputs['fullName']!,
                   userName: inputs['userName']!,
                   email: inputs['email']!,
                 );
+                 */
+
+                // Via SQL
+                doseDatabase.usersDao.insertUser(UsersCompanion.insert(
+                    userName: inputs['userName']!,
+                    fullName: inputs['fullName']!,
+                    email: inputs['email']!,
+                    password: "testpassword",
+                ));
+
+                doseDatabase.usersDao.getUsers().then((users) => print(users));
 
                 // Go back to user list
                 Navigator.pop(context);

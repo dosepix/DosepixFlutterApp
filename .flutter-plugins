@@ -1,3 +1,8 @@
 # This is a generated file; do not edit or check into version control.
 flutter_blue=/home/solvalou/StudioProjects/flutter_blue/
+path_provider=/home/solvalou/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/path_provider-2.0.2/
+path_provider_linux=/home/solvalou/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/path_provider_linux-2.0.2/
+path_provider_macos=/home/solvalou/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/path_provider_macos-2.0.2/
+path_provider_windows=/home/solvalou/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/path_provider_windows-2.0.3/
 sqflite=/home/solvalou/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/sqflite-2.0.0+3/
+sqlite3_flutter_libs=/home/solvalou/snap/flutter/common/flutter/.pub-cache/hosted/pub.dartlang.org/sqlite3_flutter_libs-0.5.0/

@@ -1,13 +1,9 @@
-import 'dart:async';
-import 'dart:typed_data';
-
-import 'package:dosepix/models/dataStream.dart';
 import 'package:dosepix/models/dosimeter.dart';
 import 'package:dosepix/screens/measInfo.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
-import 'package:flutter_blue/flutter_blue.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 // Models
 import 'package:dosepix/models/user.dart';
@@ -107,6 +103,7 @@ class _MeasureState extends State<Measure> {
       MeasurementModel measurements, ActiveUserModel activeUsers,
       BluetoothModel bluetooth) {
 
+    /*
     List<charts.Series<MeasurementDataPoint, double>> plotData = [];
     // Loop over measurements and combine them in large chart
     if (measurements.measurements.isNotEmpty) {
@@ -160,6 +157,9 @@ class _MeasureState extends State<Measure> {
         charts.SeriesLegend(position: charts.BehaviorPosition.end),
       ],
     );
+    */
+
+    LineChart plot = getLineChartCombined(measurements);
 
     List<Expanded> containers = [];
     containers.add(
@@ -192,7 +192,8 @@ class _MeasureState extends State<Measure> {
         double totalDoseUnit = measurement.totalDose < 1000 ? measurement
             .totalDose : measurement.totalDose / 1000.0;
 
-        charts.LineChart plot = getLineChart(measurement);
+        LineChart plot = getLineChart2(measurement);
+        // charts.LineChart plot = getLineChart(measurement);
         containers.add(
           Expanded(
             flex: 3,

@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:dosepix/database/databaseHandler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
 import 'package:provider/provider.dart';
@@ -88,6 +89,9 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider<MeasurementCurrent>(
           create: (context) => widget.measurementCurrent,
         ),
+        Provider<DoseDatabase>(
+          create: (context) => DoseDatabase(),
+        ),
       ],
       child: MaterialApp(
         title: widget.appTitle,
@@ -115,13 +119,13 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   @override void initState() {
     super.initState();
-
   }
 
   @override
   Widget build(BuildContext context) {
     // return Home();
-    return Measure();
+    // return Measure();
+    return UserSelect();
 
     /*
     return Scaffold(

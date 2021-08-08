@@ -8,6 +8,8 @@ import 'package:dosepix/models/user.dart';
 import 'package:dosepix/models/measurement.dart';
 import 'package:dosepix/models/dataStream.dart';
 
+import 'package:dosepix/database/databaseHandler.dart';
+
 class UserSelect extends StatelessWidget {
   const UserSelect({Key? key}) : super(key: key);
 
@@ -17,7 +19,21 @@ class UserSelect extends StatelessWidget {
     var activeUsers = context.watch<ActiveUserModel>();
     var measurements = context.watch<MeasurementModel>();
     var measurementCurrent = context.watch<MeasurementCurrent>();
+
+    // Get database
+    DoseDatabase doseDatabase = Provider.of<DoseDatabase>(context);
     // final deviceArgs = ModalRoute.of(context)!.settings.arguments as DeviceArguments;
+
+    doseDatabase.usersDao.insertUser(
+        User(
+          id: 0,
+          userName: 'TestUser',
+          fullName: 'Test User',
+          email: 'test@test.de',
+          password: '123456',
+        ));
+
+    doseDatabase.usersDao.getUsers().then((users) => print(users));
 
     return WillPopScope(
       // If selection is aborted, reset user for current measurement
