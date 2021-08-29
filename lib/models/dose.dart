@@ -41,5 +41,4 @@ class DoseModel extends ChangeNotifier {
     _doses.remove(dose);
     notifyListeners();
   }
-
 }

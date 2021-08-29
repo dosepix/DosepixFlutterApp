@@ -1,38 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'dart:math';
+import 'package:dosepix/database/databaseHandler.dart' if (dart.library.html) 'package:dosepix/databaseServer/databaseHandler.dart';
 
 const int NO_USER = -1;
-
-@immutable
-class UserType {
-  final int id;
-  final String fullName;
-  final String userName;
-  final String email;
-  final int numberInterventions;
-  final double totalDose;
-  final String password;
-
-  Map<String, dynamic> toMap() {
-    return {
-      'userName': this.userName,
-      'email': this.email,
-      'numberInterventions': this.numberInterventions,
-      'totalDose': this.totalDose,
-      'password': this.password,
-    };
-  }
-
-  UserType({
-    required this.id,
-    required this.fullName,
-    required this.userName,
-    required this.email,
-    required this.numberInterventions,
-    required this.totalDose,
-    required this.password
-  });
-}
 
 class UserArguments {
   final int userId;
@@ -40,40 +10,26 @@ class UserArguments {
 }
 
 class UserModel extends ChangeNotifier {
-  final List<UserType> _users = [];
+  final List<User> _users = [];
 
   // Get a list of currently registered users
-  List<UserType> get users => _users;
+  List<User> get users => _users;
   List<int> get ids => _users.map((user) => user.id).toList();
-  List get info => _users.map((user) => user.toMap()).toList();
+  // List get info => _users.map((user) => user.toMap()).toList();
 
   // Add a new user and notify
-  void add(UserType user) {
+  void add(User user) {
     _users.add(user);
     notifyListeners();
   }
 
-  void addNew(
-      {required String fullName,
-        required String userName,
-        required String email}) {
-    add(UserType(
-        id: ids.isEmpty ? 1 : ids.reduce(max) + 1,
-        fullName: fullName,
-        userName: userName,
-        email: email,
-        numberInterventions: 0,
-        totalDose: 0,
-        password: ""));
-}
-
   // Remove user and notify
-  void remove(UserType user) {
+  void remove(User user) {
     _users.remove(user);
     notifyListeners();
   }
 
-  UserType getUserFromId(int id) {
+  User getUserFromId(int id) {
     return _users[ids.indexOf(id)];
   }
 }

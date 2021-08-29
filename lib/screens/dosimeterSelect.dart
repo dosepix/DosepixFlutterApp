@@ -13,6 +13,9 @@ import 'package:dosepix/models/bluetooth.dart';
 import 'package:dosepix/screens/bluetoothOff.dart';
 import 'package:dosepix/screens/dosimeterAlreadyUsed.dart';
 
+// Database
+import 'package:dosepix/database/databaseHandler.dart' if (dart.library.html) 'package:dosepix/databaseServer/databaseHandler.dart';
+
 class DosimeterSelect extends StatefulWidget {
   const DosimeterSelect({Key? key}) : super(key: key);
 
@@ -25,9 +28,11 @@ class _DosimeterSelectState extends State<DosimeterSelect> {
   Widget build(BuildContext context) {
     // All registered dosimeters
     var dosimeters = context.watch<DosimeterModel>();
-    var activeDosimeters = context.watch<ActiveDosimeterModel>();
     var bluetooth = context.watch<BluetoothModel>();
     var measurementCurrent = context.watch<MeasurementCurrent>();
+
+    // Get database
+    DoseDatabase doseDatabase = Provider.of<DoseDatabase>(context);
 
     // Scan for close dosimeters
     FlutterBlue.instance.startScan(timeout: Duration(seconds: 4));
@@ -91,7 +96,7 @@ class _DosimeterSelectState extends State<DosimeterSelect> {
                     stream: FlutterBlue.instance.scanResults,
                     initialData: [],
                     builder: (c, snapshot) {
-                      return _buildListViewOfDevices(snapshot.data,
+                      return _buildListViewOfDevices(snapshot.data, doseDatabase,
                         bluetooth, dosimeters, measurementCurrent);
                     },
                   ),
@@ -161,6 +166,7 @@ class _DosimeterSelectState extends State<DosimeterSelect> {
   }
 
   ListView _buildListViewOfDevices(List<ScanResult>? results,
+      DoseDatabase doseDatabase,
       BluetoothModel bluetooth, DosimeterModel dosimeters,
       MeasurementCurrent measurementCurrent) {
     List<StreamBuilder<BluetoothDeviceState>> tiles = <StreamBuilder<BluetoothDeviceState>>[];
@@ -183,6 +189,17 @@ class _DosimeterSelectState extends State<DosimeterSelect> {
                   onTap: () {
                     // Connect device and add to list of devices
                     bluetooth.connectAndSubscribe(result.device).then((deviceId) {
+                      // Add device to database if not already included
+                      doseDatabase.dosimetersDao.insertDosimeter(
+                       DosimetersCompanion.insert(
+                         name: result.device.name,
+                         color: 'red',
+                         totalDose: 0.0,
+                       )
+                      ).catchError((error) {
+                        print('Device already added to database');
+                      });
+
                       // device already paired
                       if(deviceId > 0) {
                         if(bluetooth.getDeviceById(deviceId).userId != NO_USER) {
@@ -200,7 +217,6 @@ class _DosimeterSelectState extends State<DosimeterSelect> {
                       // Couple device with id
                       // device.dosimeterId = dosimeterId;
 
-                      // Select user, give user the corresponding dosimeterId
                       // Update current run with information
                       measurementCurrent.deviceId = deviceId;
                       measurementCurrent.dosimeterId = dosimeterId;

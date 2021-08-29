@@ -28,13 +28,15 @@ dependencies:
   flutter_blue:
     path: ../flutter_blue
   provider: ^5.0.0
+  intl:
   sqflite:
   path:
   path_provider:
   charts_flutter:
   fl_chart:
-  moor:
+  moor: ^4.0.0
   sqlite3_flutter_libs:
+  http:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -45,6 +47,7 @@ dev_dependencies:
     sdk: flutter
   moor_generator:
   build_runner:
+  test:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

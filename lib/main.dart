@@ -1,5 +1,5 @@
 import 'dart:math';
-import 'package:dosepix/database/databaseHandler.dart';
+import 'package:dosepix/database/databaseHandler.dart' if (dart.library.html) 'package:dosepix/databaseServer/databaseHandler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
 import 'package:provider/provider.dart';
@@ -14,9 +14,12 @@ import 'package:dosepix/models/bluetooth.dart';
 // Screens
 import 'screens/home.dart';
 import 'screens/measure.dart';
+import 'screens/analyze.dart';
 import 'screens/measInfo.dart';
+import 'screens/userSummary.dart';
 
 import 'package:dosepix/screens/dosimeterSelect.dart';
+import 'package:dosepix/screens/measurementSelect.dart';
 import 'package:dosepix/screens/userSelect.dart';
 import 'package:dosepix/screens/userCreate.dart';
 
@@ -32,9 +35,6 @@ int randomNum(min, max) {
 class MyApp extends StatefulWidget {
   MyApp({Key? key}) : super(key: key);
   final appTitle = "Dosepix demo";
-
-  // Instantiate models here to initialize them
-  final UserModel userModel = UserModel();
 
   // Model to store current measurement data
   final MeasurementCurrent measurementCurrent =
@@ -52,10 +52,6 @@ class _MyAppState extends State<MyApp> {
   @override void initState() {
     super.initState();
 
-    // TODO: Load data from a database
-    widget.userModel.addNew(fullName: "Flori Beißer", userName: "DerAlteKrieger", email: "test.mail");
-    widget.userModel.addNew(fullName: "Flori Beißer", userName: "DerAlteKrieger2", email: "test.mail");
-
     // Disconnect already connected dosimeters
     FlutterBlue.instance.connectedDevices.then((devices) {
       for (BluetoothDevice device in devices) {
@@ -68,9 +64,6 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<UserModel>(
-          create: (context) => widget.userModel,
-        ),
         ChangeNotifierProvider<ActiveUserModel>(
           create: (context) => ActiveUserModel(),
         ),
@@ -98,10 +91,13 @@ class _MyAppState extends State<MyApp> {
         home: MainPage(title: "Title"),
         routes: {
           '/screen/measure': (context) => Measure(),
+          '/screen/analyze': (context) => Analyze(),
           '/screen/dosimeterSelect': (context) => DosimeterSelect(),
+          '/screen/measurementSelect': (context) => MeasurementSelect(),
           '/screen/userSelect': (context) => UserSelect(),
           '/screen/userCreate': (context) => UserCreate(),
           '/screen/measInfo': (context) => MeasInfo(),
+          '/screen/userSummary': (context) => UserSummary(),
         },
       ),
     );
@@ -123,9 +119,21 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    // return Home();
+    // Dummy read to load database
+    Provider.of<DoseDatabase>(context).usersDao.getUserById(0).then(
+        (t) {print(t);}
+    );
+    Provider.of<DoseDatabase>(context).pointsDao.getPoints().then(
+            (t) {print(t);}
+    );
+
+    Provider.of<DoseDatabase>(context).measurementsDao.getMeasurements().then(
+        (t) {print(t);}
+    );
+
+    return Home();
     // return Measure();
-    return UserSelect();
+    // return UserSelect();
 
     /*
     return Scaffold(

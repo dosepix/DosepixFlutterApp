@@ -1,20 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-// Models
-import 'package:dosepix/models/user.dart';
-
-import 'package:dosepix/database/databaseHandler.dart';
+// Database
+import 'package:dosepix/database/databaseHandler.dart' if (dart.library.html) 'package:dosepix/databaseServer/databaseHandler.dart';
 
 class UserCreate extends StatelessWidget {
   UserCreate({Key? key}) : super(key: key);
-  bool _validate = false;
   final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
     // Get registered users
-    var registeredUsers = context.watch<UserModel>();
     DoseDatabase doseDatabase = Provider.of<DoseDatabase>(context);
 
     // Build inputs

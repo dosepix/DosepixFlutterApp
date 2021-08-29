@@ -1,4 +1,5 @@
-import 'package:dosepix/models/bluetooth.dart';
+import 'package:dosepix/models/mode.dart';
+import 'package:dosepix/screens/measurementSelect.dart';
 import 'package:dosepix/screens/userCreate.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -6,34 +7,28 @@ import 'package:provider/provider.dart';
 // Models
 import 'package:dosepix/models/user.dart';
 import 'package:dosepix/models/measurement.dart';
-import 'package:dosepix/models/dataStream.dart';
 
-import 'package:dosepix/database/databaseHandler.dart';
+// Database
+import 'package:dosepix/database/databaseHandler.dart' if (dart.library.html) 'package:dosepix/databaseServer/databaseHandler.dart';
 
-class UserSelect extends StatelessWidget {
+class UserSelect extends StatefulWidget {
   const UserSelect({Key? key}) : super(key: key);
 
   @override
+  _UserSelectState createState() => _UserSelectState();
+}
+
+class _UserSelectState extends State<UserSelect> {
+  @override
   Widget build(BuildContext context) {
-    var registeredUsers = context.watch<UserModel>();
     var activeUsers = context.watch<ActiveUserModel>();
-    var measurements = context.watch<MeasurementModel>();
     var measurementCurrent = context.watch<MeasurementCurrent>();
 
     // Get database
     DoseDatabase doseDatabase = Provider.of<DoseDatabase>(context);
-    // final deviceArgs = ModalRoute.of(context)!.settings.arguments as DeviceArguments;
 
-    doseDatabase.usersDao.insertUser(
-        User(
-          id: 0,
-          userName: 'TestUser',
-          fullName: 'Test User',
-          email: 'test@test.de',
-          password: '123456',
-        ));
-
-    doseDatabase.usersDao.getUsers().then((users) => print(users));
+    // Get arguments from call
+    final args = ModalRoute.of(context)!.settings.arguments as ModeArguments;
 
     return WillPopScope(
       // If selection is aborted, reset user for current measurement
@@ -64,42 +59,66 @@ class UserSelect extends StatelessWidget {
         },
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      body: _buildListViewOfUsers(context,
-          registeredUsers, activeUsers, measurements,
-          measurementCurrent),
+      body: StreamBuilder(
+        stream: doseDatabase.usersDao.watchUsers(),
+        builder: (c, AsyncSnapshot<List<User>> snapshot) {
+          print(snapshot.data);
+          print(snapshot.connectionState);
+          if(snapshot.connectionState == ConnectionState.active &&
+              snapshot.hasData && snapshot.data != null) {
+            return _buildListViewOfUsers(context,
+              snapshot.data!,
+              activeUsers,
+              measurementCurrent,
+              args);
+          }
+          return Container();
+        }),
       ),
     );
   }
 
   ListView _buildListViewOfUsers(
       BuildContext context,
-      UserModel registeredUsers,
+      List<User> users,
       ActiveUserModel activeUsers,
-      MeasurementModel measurements,
-      MeasurementCurrent current) {
+      MeasurementCurrent current,
+      ModeArguments args) {
     List<ListTile> tiles = <ListTile>[];
-    // Existing users
-    if(registeredUsers.users.isNotEmpty) {
-      for (UserType user in registeredUsers.users) {
-        tiles.add(
-          ListTile(
-            title: Text(user.userName),
-            subtitle: Text(user.fullName),
-            trailing: Icon(Icons.keyboard_arrow_right),
-            onTap: () {
-              // TODO: Check if already added!
-              activeUsers.add(user);
-              print(current.userId);
-              current.userId = user.id;
 
+    // Existing users
+    for (User user in users) {
+      tiles.add(
+        ListTile(
+          title: Text(user.userName),
+          subtitle: Text(user.fullName),
+          trailing: Icon(Icons.keyboard_arrow_right),
+          onTap: () {
+            // TODO: Check if already added!
+            activeUsers.add(user);
+            current.userId = user.id;
+
+            if (args.arg == MODE_ANALYZE) {
+              MeasurementSelectArguments arguments = MeasurementSelectArguments(
+                  MODE_ANALYZE, '/screen/measInfo', user.id);
+              Navigator.pushNamed(
+                context,
+                '/screen/measurementSelect',
+                arguments: arguments,
+              );
+            } else {
+              // Measure mode
+              ModeArguments arguments = ModeArguments(
+                  MODE_MEASUREMENT, 'POP');
               Navigator.pushNamed(
                 context,
                 '/screen/dosimeterSelect',
+                arguments: arguments,
               );
-            },
-          )
-        );
-      }
+            }
+          },
+        )
+      );
     }
 
     // Combine to ListView

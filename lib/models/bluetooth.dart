@@ -96,9 +96,6 @@ class BluetoothModel extends  ChangeNotifier {
                    dosimeterId: -1,
                    stream: stream,)
            );
-
-           // DEBUG: listen to data stream
-           // characteristic.value.listen((event) {print(event);});
          }
        });
      }
@@ -127,19 +124,21 @@ class BluetoothModel extends  ChangeNotifier {
 
   void addSubscription(int deviceId, Function call) {
     StreamSubscription subscription = getDeviceById(deviceId)
-        .stream.listen((List<int> value) {
-      print(value);
-      // value is list of four integers; convert to double
-      // int newVal = value[0] + value[1] << 8 + value[2] << 16 + value[3] << 32;
-      call(
-        MeasurementDataPoint(
-            DateTime
-                .now()
-                .toUtc()
-                .millisecondsSinceEpoch / 1000.0,
-            value[0].toDouble()
-        )
-      );
+      .stream.listen((List<int> value) {
+        if(value.isNotEmpty) {
+          print(value);
+          // value is list of four integers; convert to double
+          // int newVal = value[0] + value[1] << 8 + value[2] << 16 + value[3] << 32;
+          call(
+              MeasurementDataPoint(
+                  DateTime
+                      .now()
+                      .toUtc()
+                      .millisecondsSinceEpoch ~/ 1000,
+                  value[0].toDouble()
+              )
+          );
+        }
     });
    _subscriptions.add(subscription);
   }

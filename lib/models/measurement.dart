@@ -7,7 +7,7 @@ class MeasurementType {
   final int userId;
   final int dosimeterId;
   final int deviceId;
-  final double startTime;
+  final int startTime;
   final List<MeasurementDataPoint> doseData;
   double totalDose;
 
@@ -81,7 +81,7 @@ class MeasurementCurrent extends ChangeNotifier {
 
 // Description of a single data point
 class MeasurementDataPoint {
-  final double time;
+  final int time;
   final double dose;
   MeasurementDataPoint(this.time, this.dose);
 }
@@ -124,7 +124,7 @@ class MeasurementModel extends ChangeNotifier {
       userId: userId,
       dosimeterId: dosimeterId,
       deviceId: deviceId,
-      startTime: DateTime.now().toUtc().millisecondsSinceEpoch / 1000.0,
+      startTime: DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000.0,
       doseData: <MeasurementDataPoint>[],
       // timeData: <double>[],
       totalDose: 0.0),

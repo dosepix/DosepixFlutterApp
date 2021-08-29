@@ -558,36 +558,50 @@ class $DosimetersTable extends Dosimeters
 
 class Measurement extends DataClass implements Insertable<Measurement> {
   final int id;
+  final String name;
   final int userId;
   final int dosimeterId;
+  final double totalDose;
   Measurement(
-      {required this.id, required this.userId, required this.dosimeterId});
+      {required this.id,
+      required this.name,
+      required this.userId,
+      required this.dosimeterId,
+      required this.totalDose});
   factory Measurement.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return Measurement(
       id: const IntType()
           .mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      name: const StringType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
       userId: const IntType()
           .mapFromDatabaseResponse(data['${effectivePrefix}user_id'])!,
       dosimeterId: const IntType()
           .mapFromDatabaseResponse(data['${effectivePrefix}dosimeter_id'])!,
+      totalDose: const RealType()
+          .mapFromDatabaseResponse(data['${effectivePrefix}total_dose'])!,
     );
   }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
     map['user_id'] = Variable<int>(userId);
     map['dosimeter_id'] = Variable<int>(dosimeterId);
+    map['total_dose'] = Variable<double>(totalDose);
     return map;
   }
 
   MeasurementsCompanion toCompanion(bool nullToAbsent) {
     return MeasurementsCompanion(
       id: Value(id),
+      name: Value(name),
       userId: Value(userId),
       dosimeterId: Value(dosimeterId),
+      totalDose: Value(totalDose),
     );
   }
 
@@ -596,8 +610,10 @@ class Measurement extends DataClass implements Insertable<Measurement> {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return Measurement(
       id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
       userId: serializer.fromJson<int>(json['userId']),
       dosimeterId: serializer.fromJson<int>(json['dosimeterId']),
+      totalDose: serializer.fromJson<double>(json['totalDose']),
     );
   }
   @override
@@ -605,71 +621,107 @@ class Measurement extends DataClass implements Insertable<Measurement> {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
       'userId': serializer.toJson<int>(userId),
       'dosimeterId': serializer.toJson<int>(dosimeterId),
+      'totalDose': serializer.toJson<double>(totalDose),
     };
   }
 
-  Measurement copyWith({int? id, int? userId, int? dosimeterId}) => Measurement(
+  Measurement copyWith(
+          {int? id,
+          String? name,
+          int? userId,
+          int? dosimeterId,
+          double? totalDose}) =>
+      Measurement(
         id: id ?? this.id,
+        name: name ?? this.name,
         userId: userId ?? this.userId,
         dosimeterId: dosimeterId ?? this.dosimeterId,
+        totalDose: totalDose ?? this.totalDose,
       );
   @override
   String toString() {
     return (StringBuffer('Measurement(')
           ..write('id: $id, ')
+          ..write('name: $name, ')
           ..write('userId: $userId, ')
-          ..write('dosimeterId: $dosimeterId')
+          ..write('dosimeterId: $dosimeterId, ')
+          ..write('totalDose: $totalDose')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      $mrjf($mrjc(id.hashCode, $mrjc(userId.hashCode, dosimeterId.hashCode)));
+  int get hashCode => $mrjf($mrjc(
+      id.hashCode,
+      $mrjc(
+          name.hashCode,
+          $mrjc(userId.hashCode,
+              $mrjc(dosimeterId.hashCode, totalDose.hashCode)))));
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Measurement &&
           other.id == this.id &&
+          other.name == this.name &&
           other.userId == this.userId &&
-          other.dosimeterId == this.dosimeterId);
+          other.dosimeterId == this.dosimeterId &&
+          other.totalDose == this.totalDose);
 }
 
 class MeasurementsCompanion extends UpdateCompanion<Measurement> {
   final Value<int> id;
+  final Value<String> name;
   final Value<int> userId;
   final Value<int> dosimeterId;
+  final Value<double> totalDose;
   const MeasurementsCompanion({
     this.id = const Value.absent(),
+    this.name = const Value.absent(),
     this.userId = const Value.absent(),
     this.dosimeterId = const Value.absent(),
+    this.totalDose = const Value.absent(),
   });
   MeasurementsCompanion.insert({
     this.id = const Value.absent(),
+    required String name,
     required int userId,
     required int dosimeterId,
-  })  : userId = Value(userId),
-        dosimeterId = Value(dosimeterId);
+    required double totalDose,
+  })  : name = Value(name),
+        userId = Value(userId),
+        dosimeterId = Value(dosimeterId),
+        totalDose = Value(totalDose);
   static Insertable<Measurement> custom({
     Expression<int>? id,
+    Expression<String>? name,
     Expression<int>? userId,
     Expression<int>? dosimeterId,
+    Expression<double>? totalDose,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (name != null) 'name': name,
       if (userId != null) 'user_id': userId,
       if (dosimeterId != null) 'dosimeter_id': dosimeterId,
+      if (totalDose != null) 'total_dose': totalDose,
     });
   }
 
   MeasurementsCompanion copyWith(
-      {Value<int>? id, Value<int>? userId, Value<int>? dosimeterId}) {
+      {Value<int>? id,
+      Value<String>? name,
+      Value<int>? userId,
+      Value<int>? dosimeterId,
+      Value<double>? totalDose}) {
     return MeasurementsCompanion(
       id: id ?? this.id,
+      name: name ?? this.name,
       userId: userId ?? this.userId,
       dosimeterId: dosimeterId ?? this.dosimeterId,
+      totalDose: totalDose ?? this.totalDose,
     );
   }
 
@@ -679,11 +731,17 @@ class MeasurementsCompanion extends UpdateCompanion<Measurement> {
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
     if (userId.present) {
       map['user_id'] = Variable<int>(userId.value);
     }
     if (dosimeterId.present) {
       map['dosimeter_id'] = Variable<int>(dosimeterId.value);
+    }
+    if (totalDose.present) {
+      map['total_dose'] = Variable<double>(totalDose.value);
     }
     return map;
   }
@@ -692,8 +750,10 @@ class MeasurementsCompanion extends UpdateCompanion<Measurement> {
   String toString() {
     return (StringBuffer('MeasurementsCompanion(')
           ..write('id: $id, ')
+          ..write('name: $name, ')
           ..write('userId: $userId, ')
-          ..write('dosimeterId: $dosimeterId')
+          ..write('dosimeterId: $dosimeterId, ')
+          ..write('totalDose: $totalDose')
           ..write(')'))
         .toString();
   }
@@ -710,6 +770,10 @@ class $MeasurementsTable extends Measurements
       typeName: 'INTEGER',
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
+  final VerificationMeta _nameMeta = const VerificationMeta('name');
+  late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
+      'name', aliasedName, false,
+      typeName: 'TEXT', requiredDuringInsert: true);
   final VerificationMeta _userIdMeta = const VerificationMeta('userId');
   late final GeneratedColumn<int?> userId = GeneratedColumn<int?>(
       'user_id', aliasedName, false,
@@ -722,9 +786,14 @@ class $MeasurementsTable extends Measurements
       'dosimeter_id', aliasedName, false,
       typeName: 'INTEGER',
       requiredDuringInsert: true,
-      $customConstraints: 'REFERENCES dosimeters(id');
+      $customConstraints: 'REFERENCES dosimeters(id)');
+  final VerificationMeta _totalDoseMeta = const VerificationMeta('totalDose');
+  late final GeneratedColumn<double?> totalDose = GeneratedColumn<double?>(
+      'total_dose', aliasedName, false,
+      typeName: 'REAL', requiredDuringInsert: true);
   @override
-  List<GeneratedColumn> get $columns => [id, userId, dosimeterId];
+  List<GeneratedColumn> get $columns =>
+      [id, name, userId, dosimeterId, totalDose];
   @override
   String get aliasedName => _alias ?? 'measurements';
   @override
@@ -736,6 +805,12 @@ class $MeasurementsTable extends Measurements
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
     }
     if (data.containsKey('user_id')) {
       context.handle(_userIdMeta,
@@ -750,6 +825,12 @@ class $MeasurementsTable extends Measurements
               data['dosimeter_id']!, _dosimeterIdMeta));
     } else if (isInserting) {
       context.missing(_dosimeterIdMeta);
+    }
+    if (data.containsKey('total_dose')) {
+      context.handle(_totalDoseMeta,
+          totalDose.isAcceptableOrUnknown(data['total_dose']!, _totalDoseMeta));
+    } else if (isInserting) {
+      context.missing(_totalDoseMeta);
     }
     return context;
   }
@@ -1023,6 +1104,9 @@ abstract class _$DoseDatabase extends GeneratedDatabase {
   late final $PointsTable points = $PointsTable(this);
   late final UsersDao usersDao = UsersDao(this as DoseDatabase);
   late final DosimetersDao dosimetersDao = DosimetersDao(this as DoseDatabase);
+  late final MeasurementsDao measurementsDao =
+      MeasurementsDao(this as DoseDatabase);
+  late final PointsDao pointsDao = PointsDao(this as DoseDatabase);
   @override
   Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
   @override
@@ -1044,4 +1128,9 @@ mixin _$MeasurementsDaoMixin on DatabaseAccessor<DoseDatabase> {
   $MeasurementsTable get measurements => attachedDatabase.measurements;
   $UsersTable get users => attachedDatabase.users;
   $DosimetersTable get dosimeters => attachedDatabase.dosimeters;
+}
+mixin _$PointsDaoMixin on DatabaseAccessor<DoseDatabase> {
+  $PointsTable get points => attachedDatabase.points;
+  $MeasurementsTable get measurements => attachedDatabase.measurements;
+  $UsersTable get users => attachedDatabase.users;
 }

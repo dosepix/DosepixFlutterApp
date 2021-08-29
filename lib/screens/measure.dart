@@ -1,4 +1,5 @@
 import 'package:dosepix/models/dosimeter.dart';
+import 'package:dosepix/models/mode.dart';
 import 'package:dosepix/screens/measInfo.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +13,9 @@ import 'package:dosepix/models/bluetooth.dart';
 
 // Screens
 import 'package:dosepix/screens/bluetoothOff.dart';
+
+// Database
+import 'package:dosepix/database/databaseHandler.dart' if (dart.library.html) 'package:dosepix/databaseServer/databaseHandler.dart';
 
 // TODO
 // - Once a single measurement is started, add button in AppBar
@@ -35,12 +39,16 @@ class _MeasureState extends State<Measure> {
     var bluetooth = context.watch<BluetoothModel>();
     var measurementCurrent = context.watch<MeasurementCurrent>();
 
+    // Get database
+    DoseDatabase doseDatabase = Provider.of<DoseDatabase>(context);
+
     // Is executed when measurementCurrent is changed
     if (measurementCurrent.userId != NO_USER &&
         measurementCurrent.dosimeterId != NO_DOSIMETER &&
         measurementCurrent.deviceId != NO_DEVICE) {
 
       // Create new measurement
+      // Internal representation to handle connection
       int measurementId = measurements.addNew(
         name: "",
         userId: measurementCurrent.userId,
@@ -48,14 +56,41 @@ class _MeasureState extends State<Measure> {
         deviceId: measurementCurrent.deviceId,
       );
 
-      // Get measurement
-      MeasurementType measurement = measurements.getMeasurementFromId(measurementId);
+      // SQL to store acquired data
+      MeasurementsCompanion measSQL = MeasurementsCompanion.insert(
+        name: "",
+        userId: measurementCurrent.userId,
+        dosimeterId: measurementCurrent.dosimeterId,
+        totalDose: 0,
+      );
 
-      // Listen to stream
-      Function call = (MeasurementDataPoint dp) {
-        measurements.addDataPoint(measurementId, dp);
-      };
-      bluetooth.addSubscription(measurementCurrent.deviceId, call);
+      doseDatabase.measurementsDao.insertReturningMeasurement(measSQL).then((measQuery)
+      {
+        // Listen to stream
+        Function call = (MeasurementDataPoint dp) {
+          // Update SQL points
+          doseDatabase.pointsDao.insertPoint(
+              PointsCompanion.insert(
+                measurementId: measQuery.id,
+                time: dp.time,
+                dose: dp.dose,
+              )
+          );
+
+          // Update totalDose of SQL measurement
+          doseDatabase.measurementsDao.updateMeasurement(
+              measQuery.copyWith(
+                  totalDose: measurements.getMeasurementFromId(measurementId).totalDose));
+
+          // Use for plots
+          measurements.addDataPoint(measurementId, dp);
+        };
+
+        // Subscribe measurement to device
+        bluetooth.addSubscription(
+            measurements.getMeasurementFromId(measurementId).deviceId,
+            call);
+      });
 
       // Reset, so next measurement can be started
       measurementCurrent.userId = NO_USER;
@@ -68,20 +103,46 @@ class _MeasureState extends State<Measure> {
         title: Text("Measure Dose"),
         actions: [
           IconButton(
-            onPressed: () {
-              setState(() {
-                widget.singlePlot = !widget.singlePlot;
+            onPressed: () {showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text("Stop all measurement?"),
+                  content: Text("Do you really want to stop all measurements?"),
+                actions: [
+                  // Stop measurement and clear
+                  TextButton(onPressed: () {
+                    for(MeasurementType measurement in measurements.measurements) {
+                      // Disconnect device
+                      bluetooth.disconnectAndRemove(
+                          bluetooth.getDeviceById(measurement.deviceId));
+                      // Remove measurement
+                      measurements.remove(measurement);
+                      Navigator.pop(context);
+                    }
+                      },
+                    child: Text("OK")),
+                  TextButton(onPressed: () {
+                    Navigator.pop(context);
+                  }, child: Text("CANCEL")),
+                ]);
               });
+            },
+            icon: const Icon(Icons.delete)),
+          IconButton(
+            onPressed: () {setState(() {
+              widget.singlePlot = !widget.singlePlot;
+            });
             },
             icon: const Icon(Icons.expand)
           ),
         ],
       ),
       body: Center(
-        child: Column(
-          children: widget.singlePlot ?
-            getUserButtonsSingle(context, measurements, activeUsers, bluetooth) :
-            getUserButtons(context, measurements, activeUsers, bluetooth),
+      child: Column(
+      children: widget.singlePlot ?
+        getUserButtonsSingle(context, measurements, activeUsers, bluetooth) :
+        getUserButtons(context, doseDatabase, measurements, activeUsers, bluetooth),
         ),
       ),
     );
@@ -102,62 +163,6 @@ class _MeasureState extends State<Measure> {
   List<Expanded> getUserButtonsSingle(BuildContext context,
       MeasurementModel measurements, ActiveUserModel activeUsers,
       BluetoothModel bluetooth) {
-
-    /*
-    List<charts.Series<MeasurementDataPoint, double>> plotData = [];
-    // Loop over measurements and combine them in large chart
-    if (measurements.measurements.isNotEmpty) {
-      for (MeasurementType measurement in measurements.measurements) {
-        // Unit shown on screen, depending on magnitude of totalDose
-        String unit = measurement.totalDose < 1000 ? ' uSv' : ' mSv';
-        double totalDoseUnit = measurement.totalDose < 1000 ? measurement
-            .totalDose : measurement.totalDose / 1000.0;
-
-        // Single measurement
-        List<MeasurementDataPoint> plotDataSingle = measurement.doseData
-            .isNotEmpty ?
-        measurement.selectTimeRange(60.0) : [
-          MeasurementDataPoint(measurement.startTime, 0)
-        ];
-
-        plotData.add(
-          charts.Series<MeasurementDataPoint, double>(
-            id: activeUsers.users[activeUsers.ids.indexOf(
-                measurement.userId)].userName +
-                ': ' + totalDoseUnit.toStringAsFixed(2) + unit,
-            domainFn: (MeasurementDataPoint dp, _) => dp.time,
-            measureFn: (MeasurementDataPoint dp, _) => dp.dose,
-            data: plotDataSingle,
-          ),
-        );
-      }
-    }
-
-    charts.LineChart plot = charts.LineChart(
-      plotData,
-      animate: false,
-      primaryMeasureAxis: charts.NumericAxisSpec(
-        tickProviderSpec: charts.BasicNumericTickProviderSpec(
-            desiredTickCount: 5,
-            desiredMinTickCount: 5,
-            desiredMaxTickCount: 5,
-            zeroBound: false
-        ),
-      ),
-      secondaryMeasureAxis: charts.NumericAxisSpec(
-        tickProviderSpec: charts.BasicNumericTickProviderSpec(
-            desiredTickCount: 10,
-            desiredMinTickCount: 10,
-            desiredMaxTickCount: 10,
-            zeroBound: false
-        ),
-      ),
-      defaultInteractions: false,
-      behaviors: [
-        charts.SeriesLegend(position: charts.BehaviorPosition.end),
-      ],
-    );
-    */
 
     LineChart plot = getLineChartCombined(measurements);
 
@@ -180,6 +185,7 @@ class _MeasureState extends State<Measure> {
 
   // Create containers containing buttons of active users;
   List<Expanded> getUserButtons(BuildContext context,
+      DoseDatabase doseDatabase,
       MeasurementModel measurements, ActiveUserModel activeUsers,
       BluetoothModel bluetooth) {
     List<Expanded> containers = [];
@@ -192,7 +198,7 @@ class _MeasureState extends State<Measure> {
         double totalDoseUnit = measurement.totalDose < 1000 ? measurement
             .totalDose : measurement.totalDose / 1000.0;
 
-        LineChart plot = getLineChart2(measurement);
+        LineChart plot = getLineChart2(measurement, timeCut: true);
         // charts.LineChart plot = getLineChart(measurement);
         containers.add(
           Expanded(
@@ -203,7 +209,8 @@ class _MeasureState extends State<Measure> {
                 Navigator.pushNamed(
                   context,
                   '/screen/measInfo',
-                  arguments: MeasurementInfoArguments(measurement.id));
+                  arguments: MeasurementInfoArguments(
+                      MODE_MEASUREMENT, 'POP', measurement.id, measurement.userId));
               },
               onLongPress: () {
                 // Open dialog and ask to stop measurement
@@ -253,7 +260,8 @@ class _MeasureState extends State<Measure> {
                     // Show Username in top right corner
                     Container(
                       alignment: Alignment.topRight,
-                      child: Text(activeUsers.users[activeUsers.ids.indexOf(
+                      child: Text(
+                          activeUsers.users[activeUsers.ids.indexOf(
                           measurement.userId)].userName),
                     ),
                     Container(
@@ -325,8 +333,9 @@ class _MeasureState extends State<Measure> {
                   print('BT is off!');
                 } else {
                   Navigator.pushNamed(
-                      context,
-                      '/screen/userSelect'
+                    context,
+                    '/screen/userSelect',
+                    arguments: ModeArguments(MODE_MEASUREMENT, '/screen/dosimeterSelect'),
                   );
                 }
               });
