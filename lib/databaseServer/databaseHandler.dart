@@ -1,7 +1,7 @@
 /* === Communication to the server via API === */
 import 'dart:convert';
-import 'package:dosepix/screens/measure.dart';
 import 'package:http/http.dart' as http;
+import 'package:dosepix/models/measurement.dart';
 
 // === GENERAL ===
 const int BAD_DATA = -1;
@@ -81,14 +81,16 @@ class UsersDao {
 
     if (response.statusCode == 200) {
       Iterable l = jsonDecode(response.body);
-      return List<User>.from(l.map((json) => User.fromJson(json)));
+      return List<User>.from(l.map((json) => User.fromJson(json)).toList());
     } else {
       throw Exception("Failed to get users");
     }
   }
 
-  Stream<List<User>> watchUsers() {
-    return getUsers().asStream();
+  Stream<List<User>> watchUsers() async* {
+    yield* Stream.periodic(Duration(seconds: 1), (_) {
+      return getUsers();
+    }).asyncMap((event) async => await event);
   }
 
   Future<User> getUserById(int id) async {
@@ -109,9 +111,7 @@ class UsersDao {
       },
       body: user.toJson(),
     );
-    print(user.toJson());
 
-    print(response.statusCode);
     if (response.statusCode == 201) {
       return;
     } else {
@@ -182,9 +182,7 @@ class DosimetersDao {
       },
       body: dosimeter.toJson(),
     );
-    print(dosimeter.toJson());
 
-    print(response.statusCode);
     if (response.statusCode == 201) {
       return;
     } else {
@@ -216,7 +214,7 @@ class Measurement {
       name: json['name'],
       userId: json['userId'],
       dosimeterId: json['dosimeterId'],
-      totalDose: json['totalDose'],
+      totalDose: json['totalDose'] + .0,
     );
   }
   String toJson() {
@@ -227,9 +225,20 @@ class Measurement {
         "name": this.name,
         "userId": this.userId,
         "dosimeterId": this.dosimeterId,
-        "totalDose": this.totalDose.toStringAsFixed(2),
+        "totalDose": this.totalDose,
       }
     }
+    );
+  }
+
+  Measurement copyWith(
+      {int ?id, String ?name, int ?userId, int ?dosimeterId, double ?totalDose}) {
+    return Measurement(
+      id: id ?? 0,
+      name: name ?? "",
+      userId: userId ?? 0,
+      dosimeterId: dosimeterId ?? 0,
+      totalDose: totalDose ?? 0,
     );
   }
 }
@@ -316,9 +325,157 @@ class MeasurementsDao {
   }
 }
 
+// === POINTS ===
+class Point {
+  final int id;
+  final int measurementId;
+  final int time;
+  final double dose;
+
+  // Constructor
+  Point({
+    required this.id,
+    required this.measurementId,
+    required this.time,
+    required this.dose,
+  });
+
+  factory Point.fromJson(Map<String, dynamic> json) {
+    return Point(
+      id: json['id'],
+      measurementId: json['measurementId'],
+      time: json['time'],
+      dose: json['dose'],
+    );
+  }
+}
+
+class PointsCompanion {
+  final int id;
+  final int measurementId;
+  final int time;
+  final double dose;
+
+  PointsCompanion.insert({
+    this.id = 0,
+    required int measurementId,
+    required int time,
+    required double dose,
+  })  : measurementId = measurementId,
+        time = time,
+        dose = dose;
+
+  String toJson() {
+    return jsonEncode(<String, dynamic>
+    {
+      "point": {
+        "measurementId": this.measurementId,
+        "time": this.time,
+        "dose": this.dose + .0,
+      }
+    }
+    );
+  }
+}
+
+class MeasurementWithImportantPoints {
+  final Measurement measurement;
+  final List<Point> points;
+  MeasurementWithImportantPoints(this.measurement, this.points);
+}
+
+class PointsDao {
+  Future<List<Point>> getPoints() async {
+    final response = await http.get(Uri.parse(URL + POINTS_ROUTE));
+
+    if (response.statusCode == 200) {
+      Iterable l = jsonDecode(response.body);
+      return List<Point>.from(l.map((json) => Point.fromJson(json)));
+    } else {
+      throw Exception("Failed to get points");
+    }
+  }
+
+  Future<void> insertPoint(PointsCompanion point) async {
+    final response = await http.post(
+      Uri.parse(URL + POINTS_ROUTE),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: point.toJson(),
+    );
+
+    if (response.statusCode == 201) {
+      return;
+    } else {
+      throw Exception("Failed to create point");
+    }
+  }
+
+  Future<List<MeasurementDataPoint>> loadDataPointsOfMeasurementIdSingle(int measId) async {
+    final response = await http.get(Uri.parse(URL + POINTS_ROUTE + '?measurementId=$measId'));
+
+    if (response.statusCode == 200) {
+      Iterable l = jsonDecode(response.body);
+      return List<MeasurementDataPoint>.from(l.map((json) => MeasurementDataPoint.fromJson(json)));
+    } else {
+      throw Exception("Failed to get measurement by id");
+    }
+  }
+
+  Stream<List<MeasurementDataPoint>> loadDataPointsOfMeasurementId (int measId) async* {
+    yield* Stream.periodic(Duration(seconds: 1), (_) {
+      return loadDataPointsOfMeasurementIdSingle(measId);
+    }).asyncMap((event) async => await event);
+  }
+
+  Future<List<MeasurementWithImportantPoints>> measurementsWithImportantPointsSingle({int fromUser=BAD_DATA}) async {
+    // Get measurements
+    var response;
+    if (fromUser != BAD_DATA) {
+      response = await http.get(Uri.parse(URL + MEASUREMENTS_ROUTE + '?userId=$fromUser'));
+    } else {
+      response = await http.get(Uri.parse(URL + MEASUREMENTS_ROUTE));
+    }
+
+    final List<Measurement> measurements;
+    if (response.statusCode == 200) {
+      Iterable l = jsonDecode(response.body);
+      measurements = List<Measurement>.from(l.map((json) => Measurement.fromJson(json)));
+    } else {
+      throw Exception("Measurement not found");
+    }
+
+    // Get ids of measurements to fetch corresponding points
+    List<int> measurementIds = measurements.map((value) => value.id).toList();
+
+    // Get points
+    List<MeasurementWithImportantPoints> measPoints = [];
+    for (var idx = 0; idx < measurementIds.length; idx++) {
+      response = await http.get(Uri.parse(URL + POINTS_ROUTE + '?measurementId=${measurementIds[idx]}'));
+      if (response.statusCode == 200) {
+        Iterable l = jsonDecode(response.body);
+        final points = List<Point>.from(l.map((json) => Point.fromJson(json)));
+        print(points);
+        measPoints.add(MeasurementWithImportantPoints(measurements[idx], points));
+      } else {
+        throw Exception("Failed to get points");
+      }
+    }
+    return measPoints;
+  }
+
+  Stream<List<MeasurementWithImportantPoints>> measurementsWithImportantPoints({int fromUser=BAD_DATA}) async* {
+    yield* Stream.periodic(Duration(seconds: 1), (_) {
+      return measurementsWithImportantPointsSingle(fromUser: fromUser);
+    }).asyncMap((event) async => await event);
+  }
+}
+
 // === DOSE DATABASE ===
 class DoseDatabase  {
   final usersDao = UsersDao();
   final dosimetersDao = DosimetersDao();
   final measurementsDao = MeasurementsDao();
+  final pointsDao = PointsDao();
 }

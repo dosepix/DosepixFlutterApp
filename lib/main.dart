@@ -1,4 +1,6 @@
 import 'dart:math';
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:dosepix/database/databaseHandler.dart' if (dart.library.html) 'package:dosepix/databaseServer/databaseHandler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
@@ -120,16 +122,11 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     // Dummy read to load database
-    Provider.of<DoseDatabase>(context).usersDao.getUserById(0).then(
-        (t) {print(t);}
-    );
-    Provider.of<DoseDatabase>(context).pointsDao.getPoints().then(
-            (t) {print(t);}
-    );
-
-    Provider.of<DoseDatabase>(context).measurementsDao.getMeasurements().then(
-        (t) {print(t);}
-    );
+    if (!kIsWeb) {
+      Provider.of<DoseDatabase>(context).usersDao.getUserById(0).then((t) {print(t);});
+      Provider.of<DoseDatabase>(context).pointsDao.getPoints().then((t) {print(t);});
+      Provider.of<DoseDatabase>(context).measurementsDao.getMeasurements().then((t) {print(t);});
+    }
 
     return Home();
     // return Measure();

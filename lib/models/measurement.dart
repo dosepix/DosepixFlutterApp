@@ -84,6 +84,13 @@ class MeasurementDataPoint {
   final int time;
   final double dose;
   MeasurementDataPoint(this.time, this.dose);
+
+  factory MeasurementDataPoint.fromJson(Map<String, dynamic> json) {
+    return MeasurementDataPoint(
+        json['time'],
+        json['dose'] + .0,
+    );
+  }
 }
 
 class MeasurementModel extends ChangeNotifier {

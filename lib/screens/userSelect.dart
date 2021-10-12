@@ -62,8 +62,8 @@ class _UserSelectState extends State<UserSelect> {
       body: StreamBuilder(
         stream: doseDatabase.usersDao.watchUsers(),
         builder: (c, AsyncSnapshot<List<User>> snapshot) {
-          print(snapshot.data);
-          print(snapshot.connectionState);
+          // print(snapshot.data);
+          // print(snapshot.connectionState);
           if(snapshot.connectionState == ConnectionState.active &&
               snapshot.hasData && snapshot.data != null) {
             return _buildListViewOfUsers(context,
