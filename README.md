@@ -1,16 +1,20 @@
-# dosepix
+# Dosepix Flutter App
+Author: Sebastian Schmidt  
+E-Mail: schm.seb@gmail.com  
 
-Dosepix control app
+## Functions
+- Program is divided into two separate main modes: Measure and Analyze
+- Program can be executed with two different database approaches:
+  - A local database stored on the device. In the future, all data will be stored encrypted while decryption is performed via user-specific tokens. 
+  - A SQL database which is running on a remote server. For a implementation of the server, check out: 
+- A separation between users and admins is made. Admins share the same privileges as users while they additionally can modify entries in the database
 
-## Getting Started
+### Measure mode
+- Select a user
+- Connect to a dosemeter via bluetooth
+- Start measurement and view data acquisition in a live view
+- Add additional users and measurements and show statistics in an overview
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### Analyze mode
+- Similar to measurement mode
+- View already taken data by loading them from the database
