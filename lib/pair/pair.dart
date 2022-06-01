@@ -1,15 +1,13 @@
-import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:flutter_blue/flutter_blue.dart';
 
 import 'package:dosepix/navigationDrawer/navigationDrawer.dart';
-import 'package:flutter/material.dart';
-import 'dart:math';
-import 'package:flutter_blue/flutter_blue.dart';
 
 class PairPage extends StatefulWidget {
   final FlutterBlue flutterBlue = FlutterBlue.instance;
 
-  List<BluetoothDevice> devicesList = <BluetoothDevice>[];
-  List<bool> isConnectedList = <bool>[];
+  final List<BluetoothDevice> devicesList = <BluetoothDevice>[];
+  final List<bool> isConnectedList = <bool>[];
   PairPage({Key? key}) : super(key: key);
 
   @override
@@ -26,17 +24,19 @@ class _PairPageState extends State<PairPage> {
     }
   }
 
-  @override void initState() {
+  @override
+  void initState() {
     print('Init');
     super.initState();
 
     // Already connected devices
-    widget.flutterBlue.connectedDevices.asStream()
+    widget.flutterBlue.connectedDevices
+        .asStream()
         .listen((List<BluetoothDevice> devices) {
-          print(devices);
-          for (BluetoothDevice device in devices) {
-            _addDeviceToList(device);
-          }
+      print(devices);
+      for (BluetoothDevice device in devices) {
+        _addDeviceToList(device);
+      }
     });
 
     // Scan for devices
@@ -53,42 +53,42 @@ class _PairPageState extends State<PairPage> {
     List<Container> containers = <Container>[];
     for (BluetoothDevice device in widget.devicesList) {
       int index = widget.devicesList.indexOf(device);
-      containers.add(
-        Container(
-          height: 50,
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: Column(
-                  children: <Widget>[
-                    Text(device.name == "" ? '(unknown device)' : device.name),
-                    Text(device.id.toString()),
-                  ],
+      containers.add(Container(
+        height: 50,
+        child: Row(
+          children: <Widget>[
+            Expanded(
+              child: Column(
+                children: <Widget>[
+                  Text(device.name == "" ? '(unknown device)' : device.name),
+                  Text(device.id.toString()),
+                ],
+              ),
+            ),
+            TextButton(
+                onPressed: () {
+                  print(widget.isConnectedList[index]);
+                  setState(() {
+                    if (!widget.isConnectedList[index]) {
+                      device.connect();
+                      widget.isConnectedList[index] = true;
+                    } else {
+                      device.disconnect();
+                      widget.isConnectedList[index] = false;
+                    }
+                  });
+                },
+                style: TextButton.styleFrom(
+                  primary: Colors.white,
+                  backgroundColor: Colors.lightBlue,
+                  onSurface: Colors.grey,
                 ),
-              ),
-              TextButton(onPressed: () {
-                print(widget.isConnectedList[index]);
-                setState(() {
-                  if (!widget.isConnectedList[index]) {
-                    device.connect();
-                    widget.isConnectedList[index] = true;
-                  } else {
-                    device.disconnect();
-                    widget.isConnectedList[index] = false;
-                  }
-                });
-              },
-                  style: TextButton.styleFrom(
-                    primary: Colors.white,
-                    backgroundColor: Colors.lightBlue,
-                    onSurface: Colors.grey,
-                  ),
-                  child: widget.isConnectedList[index] ? Text('Disconnect') : Text('Connect')
-              ),
-            ],
-          ),
-        )
-      );
+                child: widget.isConnectedList[index]
+                    ? Text('Disconnect')
+                    : Text('Connect')),
+          ],
+        ),
+      ));
     }
 
     return ListView(
@@ -107,22 +107,21 @@ class _PairPageState extends State<PairPage> {
       ),
       drawer: NavigationDrawer(),
       body: Center(
-        child: StreamBuilder<BluetoothState>(
-          stream: widget.flutterBlue.state,
-          initialData: BluetoothState.unknown,
-          builder: (c, snapshot) {
-            final state = snapshot.data;
-            print(state);
-            if (state == BluetoothState.on) {
-              print('Bluetooth on');
-              return _buildListViewOfDevices();
-            } else {
-              print('Bluetooth off');
-              return BluetoothOffScreen(state: state);
-            }
-          },
-        )
-      ),
+          child: StreamBuilder<BluetoothState>(
+        stream: widget.flutterBlue.state,
+        initialData: BluetoothState.unknown,
+        builder: (c, snapshot) {
+          final state = snapshot.data;
+          print(state);
+          if (state == BluetoothState.on) {
+            print('Bluetooth on');
+            return _buildListViewOfDevices();
+          } else {
+            print('Bluetooth off');
+            return BluetoothOffScreen(state: state);
+          }
+        },
+      )),
     );
   }
 }
@@ -134,23 +133,22 @@ class BluetoothOffScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-     backgroundColor: Colors.lightBlue,
-     body: Center(
-       child: Column(
-         mainAxisSize: MainAxisSize.min,
-         children: <Widget>[
-           Icon(
-             Icons.bluetooth_disabled,
-             size: 200.0,
-             color: Colors.white54,
-           ),
-           Text(
-             'Bluetooth Adapter is ${state != null ? state.toString().substring(15) : 'not available'}.',
-             // style: Theme.of(context).primaryTextTheme.subtitle1.copyWith(color: Colors.white),
-           )
-         ],
-       ),
-     ), 
+      backgroundColor: Colors.lightBlue,
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(
+              Icons.bluetooth_disabled,
+              size: 200.0,
+              color: Colors.white54,
+            ),
+            Text(
+              'Bluetooth Adapter is ${state != null ? state.toString().substring(15) : 'not available'}.',
+            )
+          ],
+        ),
+      ),
     );
   }
 }

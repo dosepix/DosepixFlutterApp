@@ -1,9 +1,10 @@
-import 'package:rxdart/rxdart.dart' as Rx;
+import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-import 'package:moor/moor.dart';
-import 'package:moor/ffi.dart';
-import 'dart:io';
+import 'package:rxdart/rxdart.dart' as Rx;
+
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
 import 'package:dosepix/models/measurement.dart';
 part 'databaseHandler.g.dart';
 
@@ -41,7 +42,7 @@ class Points extends Table {
   RealColumn get dose => real()();
 }
 
-@UseDao(tables: [Users])
+@DriftAccessor(tables: [Users])
 class UsersDao extends DatabaseAccessor<DoseDatabase> with _$UsersDaoMixin {
   UsersDao(DoseDatabase db) : super(db);
 
@@ -58,7 +59,7 @@ class UsersDao extends DatabaseAccessor<DoseDatabase> with _$UsersDaoMixin {
   Future<void> deleteUser(Insertable<User> user) => delete(users).delete(user);
 }
 
-@UseDao(tables: [Dosimeters])
+@DriftAccessor(tables: [Dosimeters])
 class DosimetersDao extends DatabaseAccessor<DoseDatabase> with _$DosimetersDaoMixin {
   DosimetersDao(DoseDatabase db) : super(db);
 
@@ -72,7 +73,7 @@ class DosimetersDao extends DatabaseAccessor<DoseDatabase> with _$DosimetersDaoM
   Future<void> deleteDosimeter(Insertable<Dosimeter> dosimeter) => delete(dosimeters).delete(dosimeter);
 }
 
-@UseDao(tables: [Measurements, Users, Dosimeters])
+@DriftAccessor(tables: [Measurements, Users, Dosimeters])
 class MeasurementsDao extends DatabaseAccessor<DoseDatabase> with _$MeasurementsDaoMixin {
   MeasurementsDao(DoseDatabase db) : super(db);
 
@@ -98,7 +99,7 @@ class MeasurementWithImportantPoints {
   MeasurementWithImportantPoints(this.measurement, this.points);
 }
 
-@UseDao(tables: [Points, Measurements, Users])
+@DriftAccessor(tables: [Points, Measurements, Users])
 class PointsDao extends DatabaseAccessor<DoseDatabase> with _$PointsDaoMixin {
   PointsDao(DoseDatabase db) : super(db);
 
@@ -163,11 +164,11 @@ LazyDatabase _openConnection() {
    final dbFolder = await getApplicationDocumentsDirectory();
    final file = File(p.join(dbFolder.path, 'db.sqlite'));
    print(file);
-   return VmDatabase(file);
+   return NativeDatabase(file);
   });
 }
 
-@UseMoor(tables: [Users, Dosimeters, Measurements, Points],
+@DriftDatabase(tables: [Users, Dosimeters, Measurements, Points],
     daos: [UsersDao, DosimetersDao, MeasurementsDao, PointsDao])
 class DoseDatabase extends _$DoseDatabase {
   DoseDatabase() : super(_openConnection());

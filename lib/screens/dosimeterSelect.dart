@@ -1,9 +1,11 @@
-import 'package:dosepix/models/dataStream.dart';
-import 'package:dosepix/models/measurement.dart';
-import 'package:dosepix/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:dosepix/colors.dart';
+import 'package:dosepix/models/dataStream.dart';
+import 'package:dosepix/models/measurement.dart';
+import 'package:dosepix/models/user.dart';
 
 // Models
 import 'package:dosepix/models/dosimeter.dart';
@@ -38,41 +40,120 @@ class _DosimeterSelectState extends State<DosimeterSelect> {
     FlutterBlue.instance.startScan(timeout: Duration(seconds: 4));
 
     return WillPopScope(
-        onWillPop: () {
-          measurementCurrent.dosimeterId = NO_DOSIMETER;
-          return Future.value(true);
-        },
+      onWillPop: () {
+        measurementCurrent.dosimeterId = NO_DOSIMETER;
+        return Future.value(true);
+      },
       child: Scaffold(
-      appBar: AppBar(
-        title: Text("Select dosimeter"),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        child: Container(height: 50.0),
-        color: Colors.transparent,
-        elevation: 0.0,
-      ),
-      // Press button to scan for bluetooth devices;
-      // press again to stop the scan
-      floatingActionButton:
-        StreamBuilder<bool>(
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(200),
+          child: Container(
+            padding: EdgeInsets.only(
+              top: 60,
+              left: 50,
+              right: 50,
+              bottom: 50,
+            ),
+            /* decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color.fromRGBO(104, 185, 234, 1.0),
+                  Color.fromRGBO(177, 235, 249, 0.0),
+                ],
+              ),
+            ), */
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                RichText(
+                  text: TextSpan(
+                    style: GoogleFonts.nunito(
+                      fontSize: 40,
+                      fontWeight: FontWeight.w800,
+                      color: dosepixColor40,
+                    ),
+                    children: [
+                      TextSpan(text: "Select"),
+                      TextSpan(
+                        text: " Dosimeter",
+                        style: GoogleFonts.nunito(
+                          fontSize: 40,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.visibility,
+                  color: dosepixColor10,
+                  size: 100,
+                ),
+              ],
+            ),
+          ),
+        ),
+        bottomNavigationBar: Container(
+          alignment: Alignment.bottomLeft,
+          height: 50,
+          margin: EdgeInsets.only(
+            top: 20,
+            bottom: 20,
+            left: 50,
+            right: 50,
+          ),
+          child: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios,
+            ),
+            iconSize: 30,
+            color: dosepixColor50,
+            onPressed: () {
+              Navigator.maybePop(context);
+            },
+          ),
+        ),
+        // Press button to scan for bluetooth devices;
+        // press again to stop the scan
+        floatingActionButton: StreamBuilder<bool>(
           stream: FlutterBlue.instance.isScanning,
           initialData: false,
           builder: (c, snapshot) {
             if (snapshot.data!) {
               return FloatingActionButton.extended(
-                label: Text("Scanning..."),
+                label: Text(
+                  "Scanning...",
+                  style: GoogleFonts.nunito(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 icon: Icon(Icons.search),
                 elevation: 0.0,
+                backgroundColor: dosepixColor40,
+                extendedPadding: EdgeInsets.all(40),
                 onPressed: () {
                   FlutterBlue.instance.stopScan();
                 },
               );
             } else {
               return FloatingActionButton.extended(
-                label: Text("Scan"),
+                label: Text(
+                  "Scan",
+                  style: GoogleFonts.nunito(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 icon: Icon(Icons.bluetooth),
                 tooltip: 'Scan for dosimeters',
                 elevation: 0.0,
+                backgroundColor: dosepixColor40,
+                extendedPadding: EdgeInsets.all(40),
                 onPressed: () {
                   FlutterBlue.instance.startScan(timeout: Duration(seconds: 4));
                 },
@@ -80,51 +161,52 @@ class _DosimeterSelectState extends State<DosimeterSelect> {
             }
           }
         ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      // Check if bluetooth is on and show scanned results
-      body: StreamBuilder<BluetoothState> (
-        stream: FlutterBlue.instance.state,
-        initialData: BluetoothState.unknown,
-        builder: (c, snapshot) {
-          final state = snapshot.data;
-          if (state == BluetoothState.on) {
-            return Row(
-              children: [
-                // List scan results
-                Expanded(child:
-                  StreamBuilder<List<ScanResult>>(
-                    stream: FlutterBlue.instance.scanResults,
-                    initialData: [],
-                    builder: (c, snapshot) {
-                      return _buildListViewOfDevices(snapshot.data, doseDatabase,
-                        bluetooth, dosimeters, measurementCurrent);
-                    },
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        // Check if bluetooth is on and show scanned results
+        body: StreamBuilder<BluetoothState> (
+          stream: FlutterBlue.instance.state,
+          initialData: BluetoothState.unknown,
+          builder: (c, snapshot) {
+            final state = snapshot.data;
+            if (state == BluetoothState.on) {
+              return Row(
+                children: [
+                  // List scan results
+                  Expanded(child:
+                    StreamBuilder<List<ScanResult>>(
+                      stream: FlutterBlue.instance.scanResults,
+                      initialData: [],
+                      builder: (c, snapshot) {
+                        return _buildListViewOfDevices(snapshot.data, doseDatabase,
+                          bluetooth, dosimeters, measurementCurrent);
+                      },
+                    ),
                   ),
-                ),
-                Expanded(child:
-                  StreamBuilder<List<BluetoothDevice>>(
-                    stream: Stream.periodic(Duration(seconds: 2)).asyncMap(
-                            (_) => FlutterBlue.instance.connectedDevices),
-                    initialData: [],
-                    builder: (c, snapshot) {
-                      return _buildListViewOfConnectedDevices(
-                          snapshot.data, bluetooth, measurementCurrent);
-                    },
+                  Expanded(child:
+                    StreamBuilder<List<BluetoothDevice>>(
+                      stream: Stream.periodic(Duration(seconds: 2)).asyncMap(
+                              (_) => FlutterBlue.instance.connectedDevices),
+                      initialData: [],
+                      builder: (c, snapshot) {
+                        return _buildListViewOfConnectedDevices(
+                            snapshot.data, bluetooth, measurementCurrent);
+                      },
+                    ),
                   ),
-                ),
-              ],
-            );
-          } else {
-            measurementCurrent.deviceId = NO_DEVICE;
-            return BluetoothOff();
+                ],
+              );
+            } else {
+              measurementCurrent.deviceId = NO_DEVICE;
+              return BluetoothOff();
+            }
           }
-        }
-      ),
+        ),
       ),
     );
   }
 
-  ListView _buildListViewOfConnectedDevices(List<BluetoothDevice>? devices,
+  ListView _buildListViewOfConnectedDevices(
+      List<BluetoothDevice>? devices,
       BluetoothModel bluetooth,
       MeasurementCurrent measurementCurrent) {
     List<ListTile> tiles = [];
@@ -137,12 +219,13 @@ class _DosimeterSelectState extends State<DosimeterSelect> {
            // DEBUG
            bluetooth.add(
              // Add unassigned device
-               DeviceType(
-                 device: device,
-                 id: bluetooth.ids.last + 100,
-                 userId: 999,
-                 dosimeterId: 999,
-                 stream: DataStream().randomDose(Duration(seconds: 1)))
+             DeviceType(
+               device: device,
+               id: bluetooth.ids.last + 100,
+               userId: 999,
+               dosimeterId: 999,
+               stream: DataStream().randomDose(Duration(seconds: 1))
+             )
            );
 
            measurementCurrent.deviceId = bluetooth.ids.last;
@@ -158,16 +241,23 @@ class _DosimeterSelectState extends State<DosimeterSelect> {
     }
 
     return ListView(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.only(
+        left: 50,
+        right: 50,
+        top: 10,
+        bottom: 10,
+      ),
       children: <Widget>[
         ...tiles,
       ],
     );
   }
 
-  ListView _buildListViewOfDevices(List<ScanResult>? results,
+  ListView _buildListViewOfDevices(
+      List<ScanResult>? results,
       DoseDatabase doseDatabase,
-      BluetoothModel bluetooth, DosimeterModel dosimeters,
+      BluetoothModel bluetooth,
+      DosimeterModel dosimeters,
       MeasurementCurrent measurementCurrent) {
     List<StreamBuilder<BluetoothDeviceState>> tiles = <StreamBuilder<BluetoothDeviceState>>[];
     for (ScanResult result in results!) {
@@ -183,7 +273,24 @@ class _DosimeterSelectState extends State<DosimeterSelect> {
             switch (snapshot.data) {
               case BluetoothDeviceState.disconnected:
                 return ListTile(
-                  title: Text(result.device.name),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  contentPadding: EdgeInsets.only(
+                    left: 30,
+                    right: 30,
+                    top: 10,
+                    bottom: 10,
+                  ),
+                  tileColor: dosepixColor10,
+                  textColor: Color.fromRGBO(88, 88, 88, 1.0),
+                  title: Text(
+                    result.device.name,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 20.0,
+                    ),
+                  ),
                   subtitle: Text(result.device.id.toString()),
                   trailing: Icon(Icons.keyboard_arrow_right),
                   onTap: () {
@@ -230,10 +337,26 @@ class _DosimeterSelectState extends State<DosimeterSelect> {
                 );
               case BluetoothDeviceState.connected:
                 return ListTile(
-                  title: Text(result.device.name),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  contentPadding: EdgeInsets.only(
+                    left: 30,
+                    right: 30,
+                    top: 10,
+                    bottom: 10,
+                  ),
+                  tileColor: dosepixColor10,
+                  textColor: Color.fromRGBO(88, 88, 88, 1.0),
+                  title: Text(
+                    result.device.name,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 20.0,
+                    ),
+                  ),
                   subtitle: Text(result.device.id.toString()),
                   trailing: Icon(Icons.keyboard_arrow_right),
-                  tileColor: Colors.black12,
                   onTap: () {
                     // Function is called if an already connected device
                     // is selected
@@ -254,7 +377,12 @@ class _DosimeterSelectState extends State<DosimeterSelect> {
     }
 
     return ListView(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.only(
+        left: 50,
+        right: 50,
+        top: 10,
+        bottom: 10,
+      ),
       children: <Widget>[
         ...tiles,
       ],

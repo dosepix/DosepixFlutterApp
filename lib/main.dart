@@ -1,11 +1,14 @@
 import 'dart:math';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:dosepix/database/databaseHandler.dart' if (dart.library.html) 'package:dosepix/databaseServer/databaseHandler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'navigationDrawer/navigationDrawer.dart';
+import 'package:dosepix/colors.dart';
+import 'package:dosepix/database/databaseHandler.dart'
+    if (dart.library.html) 'package:dosepix/databaseServer/databaseHandler.dart';
 
 // Models
 import 'package:dosepix/models/user.dart';
@@ -14,16 +17,16 @@ import 'package:dosepix/models/measurement.dart';
 import 'package:dosepix/models/bluetooth.dart';
 
 // Screens
-import 'screens/home.dart';
-import 'screens/measure.dart';
-import 'screens/analyze.dart';
-import 'screens/measInfo.dart';
-import 'screens/userSummary.dart';
-
+import 'package:dosepix/screens/home.dart';
+import 'package:dosepix/screens/measure.dart';
+import 'package:dosepix/screens/analyze.dart';
+import 'package:dosepix/screens/measInfo.dart';
+import 'package:dosepix/screens/userSummary.dart';
 import 'package:dosepix/screens/dosimeterSelect.dart';
 import 'package:dosepix/screens/measurementSelect.dart';
 import 'package:dosepix/screens/userSelect.dart';
-import 'package:dosepix/screens/userCreate.dart';
+import 'package:dosepix/screens/userCreate/userCreate.dart';
+import 'package:dosepix/screens/instructions.dart';
 
 void main() => runApp(MyApp());
 
@@ -39,19 +42,19 @@ class MyApp extends StatefulWidget {
   final appTitle = "Dosepix demo";
 
   // Model to store current measurement data
-  final MeasurementCurrent measurementCurrent =
-    MeasurementCurrent(
-      userId: NO_USER,
-      dosimeterId: NO_DOSIMETER,
-      deviceId: NO_DEVICE,
-    );
+  final MeasurementCurrent measurementCurrent = MeasurementCurrent(
+    userId: NO_USER,
+    dosimeterId: NO_DOSIMETER,
+    deviceId: NO_DEVICE,
+  );
 
   @override
   _MyAppState createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  @override void initState() {
+  @override
+  void initState() {
     super.initState();
 
     // Disconnect already connected dosimeters
@@ -91,6 +94,7 @@ class _MyAppState extends State<MyApp> {
       child: MaterialApp(
         title: widget.appTitle,
         home: MainPage(title: "Title"),
+        theme: _buildTheme(),
         routes: {
           '/screen/measure': (context) => Measure(),
           '/screen/analyze': (context) => Analyze(),
@@ -100,10 +104,27 @@ class _MyAppState extends State<MyApp> {
           '/screen/userCreate': (context) => UserCreate(),
           '/screen/measInfo': (context) => MeasInfo(),
           '/screen/userSummary': (context) => UserSummary(),
+          '/screen/instructions': (context) => Instructions(),
         },
       ),
     );
   }
+}
+
+ThemeData _buildTheme() {
+  var baseTheme = ThemeData();
+  return baseTheme.copyWith(
+    textTheme: GoogleFonts.nunitoTextTheme(baseTheme.textTheme),
+    appBarTheme: AppBarTheme(
+      iconTheme: IconThemeData(
+        color: dosepixColor50,
+      ),
+      titleTextStyle: TextStyle(
+        color: dosepixColor50,
+        fontSize: 20,
+      ),
+    ),
+  );
 }
 
 class MainPage extends StatefulWidget {
@@ -115,7 +136,8 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  @override void initState() {
+  @override
+  void initState() {
     super.initState();
   }
 
@@ -123,23 +145,20 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     // Dummy read to load database
     if (!kIsWeb) {
-      Provider.of<DoseDatabase>(context).usersDao.getUserById(0).then((t) {print(t);});
-      Provider.of<DoseDatabase>(context).pointsDao.getPoints().then((t) {print(t);});
-      Provider.of<DoseDatabase>(context).measurementsDao.getMeasurements().then((t) {print(t);});
+      Provider.of<DoseDatabase>(context).usersDao.getUserById(0).then((t) {
+        print(t);
+      });
+      Provider.of<DoseDatabase>(context).pointsDao.getPoints().then((t) {
+        print(t);
+      });
+      Provider.of<DoseDatabase>(context)
+          .measurementsDao
+          .getMeasurements()
+          .then((t) {
+        print(t);
+      });
     }
 
     return Home();
-    // return Measure();
-    // return UserSelect();
-
-    /*
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      drawer: NavigationDrawer(title: "Drawer"),
-      body: Center(child: Text("Body test")),
-    );
-     */
   }
 }

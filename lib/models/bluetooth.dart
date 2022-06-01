@@ -8,8 +8,10 @@ import 'dart:math';
 const int NO_DEVICE = -1;
 
 // UUIDs for a dosimeter
-const String DOSE_SERVICE = 'f000ba55-0451-4000-b000-000000000000';
-const String DOSE_CHARACTERISTIC = 'f0002bad-0451-4000-b000-000000000000';
+// const String DOSE_SERVICE = 'f000ba55-0451-4000-b000-000000000000';
+const String DOSE_SERVICE = '0000fe40-cc7a-482a-984a-7f2ed5b3e58f';
+// const String DOSE_CHARACTERISTIC = 'f0002bad-0451-4000-b000-000000000000';
+const String DOSE_CHARACTERISTIC = '0000fe41-8e22-4541-9d4c-21edae82ed19';
 
 class DeviceType {
   final BluetoothDevice device;
@@ -89,12 +91,12 @@ class BluetoothModel extends  ChangeNotifier {
            newId = ids.isEmpty ? 1 : ids.reduce(max) + 1;
            _devices.add(
              // Add unassigned device
-               DeviceType(
-                   device: device,
-                   id: newId,
-                   userId: -1,
-                   dosimeterId: -1,
-                   stream: stream,)
+             DeviceType(
+               device: device,
+               id: newId,
+               userId: -1,
+               dosimeterId: -1,
+               stream: stream,)
            );
          }
        });
@@ -122,20 +124,45 @@ class BluetoothModel extends  ChangeNotifier {
     }
   }
 
-  void addSubscription(int deviceId, Function call) {
+  void addSubscription(
+      int deviceId,
+      Function call,
+      ) {
     StreamSubscription subscription = getDeviceById(deviceId)
       .stream.listen((List<int> value) {
         if(value.isNotEmpty) {
           print(value);
-          // value is list of four integers; convert to double
-          // int newVal = value[0] + value[1] << 8 + value[2] << 16 + value[3] << 32;
+          // value is list of six integers, representing the characters of the
+          // number as well as the unit
+
+          var valueString = String.fromCharCodes(value.sublist(0, 5));
+          var valueFloat = double.parse( valueString );
+
+          var unit = value[5];
+          switch (unit) {
+            case 0x89:
+              // In case of micro, do nothing
+              break;
+            case 0x88:
+              // nano
+              valueFloat /= 1.0e6;
+              break;
+            case 0x8a:
+              // milli
+              valueFloat *= 1.0e3;
+              break;
+            default:
+              // no unit
+              valueFloat  *= 1.0e6;
+          }
+
           call(
               MeasurementDataPoint(
                   DateTime
                       .now()
                       .toUtc()
                       .millisecondsSinceEpoch ~/ 1000,
-                  value[0].toDouble()
+                  valueFloat,
               )
           );
         }

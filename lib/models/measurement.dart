@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 
 class MeasurementType {
   final int id;
@@ -42,7 +42,7 @@ class MeasurementType {
   void addDataPoint(MeasurementDataPoint dp) {
     // timeData.add(dp.time);
     this.doseData.add(MeasurementDataPoint(dp.time - this.startTime, dp.dose));
-    this.totalDose += dp.dose;
+    this.totalDose = dp.dose;
   }
 
   List<MeasurementDataPoint> selectTimeRange(double time) {

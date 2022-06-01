@@ -6,7 +6,7 @@ part of 'databaseHandler.dart';
 // MoorGenerator
 // **************************************************************************
 
-// ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
+// ignore_for_file: type=lint
 class User extends DataClass implements Insertable<User> {
   final int id;
   final String userName;
@@ -19,8 +19,7 @@ class User extends DataClass implements Insertable<User> {
       required this.fullName,
       required this.email,
       required this.password});
-  factory User.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory User.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return User(
       id: const IntType()
@@ -58,7 +57,7 @@ class User extends DataClass implements Insertable<User> {
 
   factory User.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return User(
       id: serializer.fromJson<int>(json['id']),
       userName: serializer.fromJson<String>(json['userName']),
@@ -69,7 +68,7 @@ class User extends DataClass implements Insertable<User> {
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'userName': serializer.toJson<String>(userName),
@@ -105,10 +104,7 @@ class User extends DataClass implements Insertable<User> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(
-      id.hashCode,
-      $mrjc(userName.hashCode,
-          $mrjc(fullName.hashCode, $mrjc(email.hashCode, password.hashCode)))));
+  int get hashCode => Object.hash(id, userName, fullName, email, password);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -209,45 +205,51 @@ class UsersCompanion extends UpdateCompanion<User> {
 }
 
 class $UsersTable extends Users with TableInfo<$UsersTable, User> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $UsersTable(this._db, [this._alias]);
+  $UsersTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _userNameMeta = const VerificationMeta('userName');
+  @override
   late final GeneratedColumn<String?> userName =
       GeneratedColumn<String?>('user_name', aliasedName, false,
           additionalChecks: GeneratedColumn.checkTextLength(
             minTextLength: 6,
           ),
-          typeName: 'TEXT',
+          type: const StringType(),
           requiredDuringInsert: true,
           $customConstraints: 'UNIQUE');
   final VerificationMeta _fullNameMeta = const VerificationMeta('fullName');
+  @override
   late final GeneratedColumn<String?> fullName =
       GeneratedColumn<String?>('full_name', aliasedName, false,
           additionalChecks: GeneratedColumn.checkTextLength(
             minTextLength: 6,
           ),
-          typeName: 'TEXT',
+          type: const StringType(),
           requiredDuringInsert: true);
   final VerificationMeta _emailMeta = const VerificationMeta('email');
+  @override
   late final GeneratedColumn<String?> email = GeneratedColumn<String?>(
       'email', aliasedName, false,
       additionalChecks: GeneratedColumn.checkTextLength(),
-      typeName: 'TEXT',
+      type: const StringType(),
       requiredDuringInsert: true);
   final VerificationMeta _passwordMeta = const VerificationMeta('password');
+  @override
   late final GeneratedColumn<String?> password =
       GeneratedColumn<String?>('password', aliasedName, false,
           additionalChecks: GeneratedColumn.checkTextLength(
             minTextLength: 6,
           ),
-          typeName: 'TEXT',
+          type: const StringType(),
           requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns =>
@@ -295,13 +297,13 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return User.fromData(data, _db,
+    return User.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
   $UsersTable createAlias(String alias) {
-    return $UsersTable(_db, alias);
+    return $UsersTable(attachedDatabase, alias);
   }
 }
 
@@ -315,8 +317,7 @@ class Dosimeter extends DataClass implements Insertable<Dosimeter> {
       required this.name,
       required this.color,
       required this.totalDose});
-  factory Dosimeter.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory Dosimeter.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return Dosimeter(
       id: const IntType()
@@ -350,7 +351,7 @@ class Dosimeter extends DataClass implements Insertable<Dosimeter> {
 
   factory Dosimeter.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return Dosimeter(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
@@ -360,7 +361,7 @@ class Dosimeter extends DataClass implements Insertable<Dosimeter> {
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
@@ -389,8 +390,7 @@ class Dosimeter extends DataClass implements Insertable<Dosimeter> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(id.hashCode,
-      $mrjc(name.hashCode, $mrjc(color.hashCode, totalDose.hashCode))));
+  int get hashCode => Object.hash(id, name, color, totalDose);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -479,34 +479,39 @@ class DosimetersCompanion extends UpdateCompanion<Dosimeter> {
 
 class $DosimetersTable extends Dosimeters
     with TableInfo<$DosimetersTable, Dosimeter> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $DosimetersTable(this._db, [this._alias]);
+  $DosimetersTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
   late final GeneratedColumn<String?> name =
       GeneratedColumn<String?>('name', aliasedName, false,
           additionalChecks: GeneratedColumn.checkTextLength(
             minTextLength: 6,
           ),
-          typeName: 'TEXT',
+          type: const StringType(),
           requiredDuringInsert: true,
           $customConstraints: 'UNIQUE');
   final VerificationMeta _colorMeta = const VerificationMeta('color');
+  @override
   late final GeneratedColumn<String?> color = GeneratedColumn<String?>(
       'color', aliasedName, false,
       additionalChecks: GeneratedColumn.checkTextLength(),
-      typeName: 'TEXT',
+      type: const StringType(),
       requiredDuringInsert: true);
   final VerificationMeta _totalDoseMeta = const VerificationMeta('totalDose');
+  @override
   late final GeneratedColumn<double?> totalDose = GeneratedColumn<double?>(
       'total_dose', aliasedName, false,
-      typeName: 'REAL', requiredDuringInsert: true);
+      type: const RealType(), requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [id, name, color, totalDose];
   @override
@@ -546,13 +551,13 @@ class $DosimetersTable extends Dosimeters
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Dosimeter map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return Dosimeter.fromData(data, _db,
+    return Dosimeter.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
   $DosimetersTable createAlias(String alias) {
-    return $DosimetersTable(_db, alias);
+    return $DosimetersTable(attachedDatabase, alias);
   }
 }
 
@@ -568,8 +573,7 @@ class Measurement extends DataClass implements Insertable<Measurement> {
       required this.userId,
       required this.dosimeterId,
       required this.totalDose});
-  factory Measurement.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory Measurement.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return Measurement(
       id: const IntType()
@@ -607,7 +611,7 @@ class Measurement extends DataClass implements Insertable<Measurement> {
 
   factory Measurement.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return Measurement(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
@@ -618,7 +622,7 @@ class Measurement extends DataClass implements Insertable<Measurement> {
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
@@ -654,12 +658,7 @@ class Measurement extends DataClass implements Insertable<Measurement> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(
-      id.hashCode,
-      $mrjc(
-          name.hashCode,
-          $mrjc(userId.hashCode,
-              $mrjc(dosimeterId.hashCode, totalDose.hashCode)))));
+  int get hashCode => Object.hash(id, name, userId, dosimeterId, totalDose);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -761,36 +760,42 @@ class MeasurementsCompanion extends UpdateCompanion<Measurement> {
 
 class $MeasurementsTable extends Measurements
     with TableInfo<$MeasurementsTable, Measurement> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $MeasurementsTable(this._db, [this._alias]);
+  $MeasurementsTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
   late final GeneratedColumn<String?> name = GeneratedColumn<String?>(
       'name', aliasedName, false,
-      typeName: 'TEXT', requiredDuringInsert: true);
+      type: const StringType(), requiredDuringInsert: true);
   final VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
   late final GeneratedColumn<int?> userId = GeneratedColumn<int?>(
       'user_id', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: true,
       $customConstraints: 'REFERENCES users(id)');
   final VerificationMeta _dosimeterIdMeta =
       const VerificationMeta('dosimeterId');
+  @override
   late final GeneratedColumn<int?> dosimeterId = GeneratedColumn<int?>(
       'dosimeter_id', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: true,
       $customConstraints: 'REFERENCES dosimeters(id)');
   final VerificationMeta _totalDoseMeta = const VerificationMeta('totalDose');
+  @override
   late final GeneratedColumn<double?> totalDose = GeneratedColumn<double?>(
       'total_dose', aliasedName, false,
-      typeName: 'REAL', requiredDuringInsert: true);
+      type: const RealType(), requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns =>
       [id, name, userId, dosimeterId, totalDose];
@@ -839,13 +844,13 @@ class $MeasurementsTable extends Measurements
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Measurement map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return Measurement.fromData(data, _db,
+    return Measurement.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
   $MeasurementsTable createAlias(String alias) {
-    return $MeasurementsTable(_db, alias);
+    return $MeasurementsTable(attachedDatabase, alias);
   }
 }
 
@@ -859,8 +864,7 @@ class Point extends DataClass implements Insertable<Point> {
       required this.measurementId,
       required this.time,
       required this.dose});
-  factory Point.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String? prefix}) {
+  factory Point.fromData(Map<String, dynamic> data, {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     return Point(
       id: const IntType()
@@ -894,7 +898,7 @@ class Point extends DataClass implements Insertable<Point> {
 
   factory Point.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return Point(
       id: serializer.fromJson<int>(json['id']),
       measurementId: serializer.fromJson<int>(json['measurementId']),
@@ -904,7 +908,7 @@ class Point extends DataClass implements Insertable<Point> {
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
+    serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'measurementId': serializer.toJson<int>(measurementId),
@@ -932,8 +936,7 @@ class Point extends DataClass implements Insertable<Point> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(id.hashCode,
-      $mrjc(measurementId.hashCode, $mrjc(time.hashCode, dose.hashCode))));
+  int get hashCode => Object.hash(id, measurementId, time, dose);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1021,30 +1024,35 @@ class PointsCompanion extends UpdateCompanion<Point> {
 }
 
 class $PointsTable extends Points with TableInfo<$PointsTable, Point> {
-  final GeneratedDatabase _db;
+  @override
+  final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $PointsTable(this._db, [this._alias]);
+  $PointsTable(this.attachedDatabase, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
   late final GeneratedColumn<int?> id = GeneratedColumn<int?>(
       'id', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: false,
       defaultConstraints: 'PRIMARY KEY AUTOINCREMENT');
   final VerificationMeta _measurementIdMeta =
       const VerificationMeta('measurementId');
+  @override
   late final GeneratedColumn<int?> measurementId = GeneratedColumn<int?>(
       'measurement_id', aliasedName, false,
-      typeName: 'INTEGER',
+      type: const IntType(),
       requiredDuringInsert: true,
       $customConstraints: 'REFERENCES measurements(id)');
   final VerificationMeta _timeMeta = const VerificationMeta('time');
+  @override
   late final GeneratedColumn<int?> time = GeneratedColumn<int?>(
       'time', aliasedName, false,
-      typeName: 'INTEGER', requiredDuringInsert: true);
+      type: const IntType(), requiredDuringInsert: true);
   final VerificationMeta _doseMeta = const VerificationMeta('dose');
+  @override
   late final GeneratedColumn<double?> dose = GeneratedColumn<double?>(
       'dose', aliasedName, false,
-      typeName: 'REAL', requiredDuringInsert: true);
+      type: const RealType(), requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [id, measurementId, time, dose];
   @override
@@ -1086,13 +1094,13 @@ class $PointsTable extends Points with TableInfo<$PointsTable, Point> {
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   Point map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return Point.fromData(data, _db,
+    return Point.fromData(data,
         prefix: tablePrefix != null ? '$tablePrefix.' : null);
   }
 
   @override
   $PointsTable createAlias(String alias) {
-    return $PointsTable(_db, alias);
+    return $PointsTable(attachedDatabase, alias);
   }
 }
 

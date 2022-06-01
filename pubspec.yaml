@@ -18,7 +18,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
+  sdk: ">=2.12.0"
 
 dependencies:
   flutter:
@@ -27,16 +27,17 @@ dependencies:
   protobuf: ^2.0.0
   flutter_blue:
     path: ../flutter_blue
-  provider: ^5.0.0
+  provider: ^6.0.3
   intl:
   sqflite:
-  path:
-  path_provider:
-  charts_flutter:
-  fl_chart:
-  moor: ^4.0.0
-  sqlite3_flutter_libs:
+  sqlite3_flutter_libs: ^0.5.0
+  path: ^1.8.1
+  fl_chart: ^0.50.6
+  drift: ^1.6.0
   http:
+  tuple: ^2.0.0
+  google_fonts: ^3.0.1
+  flutter_svg: ^1.1.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -45,8 +46,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  moor_generator:
-  build_runner:
+  drift_dev: ^1.6.0
+  build_runner: ^2.1.10
   test:
 
 # For information on the generic Dart part of this file, see the
@@ -59,6 +60,9 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  assets:
+    - assets/app_logo.svg
+    - assets/placeholder.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
