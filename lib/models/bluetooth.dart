@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:dosepix/models/measurement.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_blue/flutter_blue.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'dart:math';
 
 const int NO_DEVICE = -1;
@@ -46,7 +46,7 @@ Future<List<BluetoothService>> getServices(BluetoothDevice device) async {
 }
 
 class BluetoothModel extends  ChangeNotifier {
-  final FlutterBlue _flutterBlue = FlutterBlue.instance;
+  final FlutterBluePlus _flutterBlue = FlutterBluePlus.instance;
   bool _bluetoothOn = false;
   final List<DeviceType> _devices = [];
   List<StreamSubscription> _subscriptions = [];

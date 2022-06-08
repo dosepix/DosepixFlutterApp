@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_blue/flutter_blue.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dosepix/colors.dart';
@@ -37,7 +37,7 @@ class _DosimeterSelectState extends State<DosimeterSelect> {
     DoseDatabase doseDatabase = Provider.of<DoseDatabase>(context);
 
     // Scan for close dosimeters
-    FlutterBlue.instance.startScan(timeout: Duration(seconds: 4));
+    FlutterBluePlus.instance.startScan(timeout: Duration(seconds: 4));
 
     return WillPopScope(
       onWillPop: () {
@@ -120,7 +120,7 @@ class _DosimeterSelectState extends State<DosimeterSelect> {
         // Press button to scan for bluetooth devices;
         // press again to stop the scan
         floatingActionButton: StreamBuilder<bool>(
-          stream: FlutterBlue.instance.isScanning,
+          stream: FlutterBluePlus.instance.isScanning,
           initialData: false,
           builder: (c, snapshot) {
             if (snapshot.data!) {
@@ -137,7 +137,7 @@ class _DosimeterSelectState extends State<DosimeterSelect> {
                 backgroundColor: dosepixColor40,
                 extendedPadding: EdgeInsets.all(40),
                 onPressed: () {
-                  FlutterBlue.instance.stopScan();
+                  FlutterBluePlus.instance.stopScan();
                 },
               );
             } else {
@@ -155,7 +155,7 @@ class _DosimeterSelectState extends State<DosimeterSelect> {
                 backgroundColor: dosepixColor40,
                 extendedPadding: EdgeInsets.all(40),
                 onPressed: () {
-                  FlutterBlue.instance.startScan(timeout: Duration(seconds: 4));
+                  FlutterBluePlus.instance.startScan(timeout: Duration(seconds: 4));
                 },
               );
             }
@@ -164,7 +164,7 @@ class _DosimeterSelectState extends State<DosimeterSelect> {
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         // Check if bluetooth is on and show scanned results
         body: StreamBuilder<BluetoothState> (
-          stream: FlutterBlue.instance.state,
+          stream: FlutterBluePlus.instance.state,
           initialData: BluetoothState.unknown,
           builder: (c, snapshot) {
             final state = snapshot.data;
@@ -174,7 +174,7 @@ class _DosimeterSelectState extends State<DosimeterSelect> {
                   // List scan results
                   Expanded(child:
                     StreamBuilder<List<ScanResult>>(
-                      stream: FlutterBlue.instance.scanResults,
+                      stream: FlutterBluePlus.instance.scanResults,
                       initialData: [],
                       builder: (c, snapshot) {
                         return _buildListViewOfDevices(snapshot.data, doseDatabase,
@@ -185,7 +185,7 @@ class _DosimeterSelectState extends State<DosimeterSelect> {
                   Expanded(child:
                     StreamBuilder<List<BluetoothDevice>>(
                       stream: Stream.periodic(Duration(seconds: 2)).asyncMap(
-                              (_) => FlutterBlue.instance.connectedDevices),
+                              (_) => FlutterBluePlus.instance.connectedDevices),
                       initialData: [],
                       builder: (c, snapshot) {
                         return _buildListViewOfConnectedDevices(

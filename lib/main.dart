@@ -1,11 +1,9 @@
 import 'dart:math';
-import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:flutter_blue/flutter_blue.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'navigationDrawer/navigationDrawer.dart';
 import 'package:dosepix/colors.dart';
 import 'package:dosepix/database/databaseHandler.dart'
     if (dart.library.html) 'package:dosepix/databaseServer/databaseHandler.dart';
@@ -58,7 +56,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
 
     // Disconnect already connected dosimeters
-    FlutterBlue.instance.connectedDevices.then((devices) {
+    FlutterBluePlus.instance.connectedDevices.then((devices) {
       for (BluetoothDevice device in devices) {
         device.disconnect();
       }
