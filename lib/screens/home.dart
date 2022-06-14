@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:dosepix/models/mode.dart';
+import 'package:dosepix/screens/measInfo.dart';
 
 class Home extends StatelessWidget {
   @override
@@ -177,10 +179,21 @@ class MenuButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(borderRadius),
           child: InkWell(
             onTap: () {
-              Navigator.pushNamed(
-                context,
-                path,
-              );
+              if (path == '/screen/analyze') {
+                Navigator.pushNamed(
+                  context,
+                  '/screen/userSelect',
+                  arguments: ModeArguments(
+                    MODE_ANALYZE,
+                    '/screen/measurementSelect',
+                  ),
+                );
+              } else {
+                Navigator.pushNamed(
+                  context,
+                  path,
+                );
+              }
             },
             child: Container(
               height: 100.0,

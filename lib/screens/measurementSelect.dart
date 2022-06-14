@@ -3,6 +3,7 @@ import 'package:dosepix/screens/measInfo.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:dosepix/models/linechart.dart';
 
 // Database
 import 'package:dosepix/database/databaseHandler.dart' if (dart.library.html) 'package:dosepix/databaseServer/databaseHandler.dart';

@@ -217,6 +217,7 @@ class _DosimeterSelectState extends State<DosimeterSelect> {
          title: Text(device.name),
          onTap: () {
            // DEBUG
+           /*
            bluetooth.add(
              // Add unassigned device
              DeviceType(
@@ -227,6 +228,7 @@ class _DosimeterSelectState extends State<DosimeterSelect> {
                stream: DataStream().randomDose(Duration(seconds: 1))
              )
            );
+           */
 
            measurementCurrent.deviceId = bluetooth.ids.last;
            measurementCurrent.dosimeterId = 999;
@@ -262,9 +264,10 @@ class _DosimeterSelectState extends State<DosimeterSelect> {
     List<StreamBuilder<BluetoothDeviceState>> tiles = <StreamBuilder<BluetoothDeviceState>>[];
     for (ScanResult result in results!) {
       // Do not list devices which are not dosimeters
-      if(!result.device.name.contains("Dosepix")) {
+      if(!(result.device.name.contains("DPX") || result.device.name.contains("Dosepix"))) {
         continue;
       }
+      print(result);
       tiles.add(
         StreamBuilder<BluetoothDeviceState>(
           stream: result.device.state,

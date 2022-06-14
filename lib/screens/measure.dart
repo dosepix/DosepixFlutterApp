@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:dosepix/colors.dart';
 
 // Models
 import 'package:dosepix/models/user.dart';
@@ -10,6 +9,7 @@ import 'package:dosepix/models/measurement.dart';
 import 'package:dosepix/models/bluetooth.dart';
 import 'package:dosepix/models/dosimeter.dart';
 import 'package:dosepix/models/mode.dart';
+import 'package:dosepix/models/linechart.dart';
 
 // Screens
 import 'package:dosepix/screens/bluetoothOff.dart';
@@ -203,6 +203,12 @@ class _MeasureState extends State<Measure> {
       Expanded(
         flex: 8,
         child: Container(
+          padding: EdgeInsets.only(
+            top: 5,
+            bottom: 5,
+            left: 30,
+            right: 30,
+          ),
           child: plot,
         ),
       ),
@@ -239,9 +245,7 @@ class _MeasureState extends State<Measure> {
             ? measurement.totalDose
             : measurement.totalDose / 1000.0;
 
-        LineChart plot = getLineChart2(measurement, timeCut: true);
-
-        // charts.LineChart plot = getLineChart(measurement);
+        LineChart plot = getLineChart(measurement, timeCut: true);
         containers.add(
           Expanded(
             flex: 3,
