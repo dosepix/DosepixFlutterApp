@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:tuple/tuple.dart';
+import 'package:dosepix/colors.dart';
 
 // Models
 import 'package:dosepix/models/measurement.dart';
@@ -55,7 +56,11 @@ LineChart generateLineChart(
   List<LineChartBarData> lineData,
   double doseInterval,
   double minY,
-  double maxY,) {
+  double maxY,
+  {
+    bool showSingle=false,
+  }
+  ) {
 
   return LineChart(
     LineChartData(
@@ -75,7 +80,7 @@ LineChart generateLineChart(
           sideTitles: SideTitles(
             showTitles: true,
             reservedSize: 22,
-            interval: 10,
+            // interval: 1000,
             getTitlesWidget: (double value, TitleMeta meta) {
               TextStyle textStyle = const TextStyle(
                 color: Color(0xff373d42),
@@ -87,9 +92,13 @@ LineChart generateLineChart(
                 return SizedBox.shrink();
               }
 
-              String title = (value ~/ 60).toString() +
-                  ':' +
-                  (value.toInt() % 60).toString();
+              int seconds = value.toInt() % 60;
+              String secondsString = ':' + (seconds < 10 ? '0' + seconds.toString() : seconds.toString());
+              if (showSingle) {
+                secondsString = '';
+              }
+
+              String title = (value ~/ 60).toString() + secondsString;
 
               return Text(
                 title,
@@ -101,7 +110,7 @@ LineChart generateLineChart(
         leftTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
-            interval: doseInterval,
+            // interval: doseInterval,
             getTitlesWidget: (double value, TitleMeta meta) {
               TextStyle textStyle = const TextStyle(
                 color: Color(0xff373d42),
@@ -115,13 +124,13 @@ LineChart generateLineChart(
 
               Tuple2 d = reformatDose(value);
               double dDose = d.item1;
-              String title = dDose.toStringAsFixed(1);
+              String title = dDose.toStringAsFixed(2);
               return Text(
                 title,
                 style: textStyle,
               );
             },
-            reservedSize: 50,
+            reservedSize: 60,
           ),
         ),
         topTitles: AxisTitles(
@@ -145,8 +154,9 @@ LineChart generateLineChart(
       gridData: FlGridData(
         show: true,
         drawVerticalLine: true,
-        horizontalInterval: doseInterval,
-        verticalInterval: 5,
+        drawHorizontalLine: true,
+        // horizontalInterval: horizontalInterval,
+        // verticalInterval: doseInterval,
       ),
       lineBarsData: lineData,
     ),
@@ -156,7 +166,13 @@ LineChart generateLineChart(
   );
 }
 
-LineChart getLineChart(MeasurementType measurement, {bool timeCut = false}) {
+LineChart getLineChart(
+  MeasurementType measurement,
+  {
+    bool timeCut = false,
+    bool useGradient = true,
+    bool showSingle = false,
+  }) {
   List<MeasurementDataPoint> plotData = measurement.doseData.isNotEmpty
       ? measurement.doseData.reversed.toList()
       : [MeasurementDataPoint(measurement.startTime, 0)];
@@ -165,11 +181,22 @@ LineChart getLineChart(MeasurementType measurement, {bool timeCut = false}) {
   }
 
   double doseInterval = getDoseInterval(plotData);
-  List<Color> gradientColors = [Colors.blue.withOpacity(0), Colors.blue];
-  Gradient gradient = LinearGradient(
-    colors: gradientColors,
-    stops: [0.1, 1.0],
-  );
+  List<Color> gradientColors = [
+    dosepixColor20.withAlpha(20),
+    dosepixColor40.withAlpha(100),
+    dosepixColor50.withAlpha(200),
+  ];
+  
+  Gradient gradient = useGradient 
+    ? LinearGradient(
+      colors: gradientColors,
+      stops: [0.1, 0.5, 1.0],
+    )
+    : LinearGradient(
+      colors: [dosepixColor50.withAlpha(200)],
+      stops: [1],
+    );
+
   LineChartBarData lineData = LineChartBarData(
     spots: plotData.map((dp) => FlSpot(dp.time.toDouble(), dp.dose)).toList(),
     dotData: FlDotData(show: false),
@@ -199,7 +226,8 @@ LineChart getLineChart(MeasurementType measurement, {bool timeCut = false}) {
       [lineData],
       doseInterval,
       minY,
-      maxY
+      maxY,
+      showSingle: showSingle,
     );
 }
 

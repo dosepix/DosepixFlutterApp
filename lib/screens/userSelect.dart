@@ -9,6 +9,7 @@ import 'package:dosepix/screens/userCreate/userCreate.dart';
 // Models
 import 'package:dosepix/models/user.dart';
 import 'package:dosepix/models/measurement.dart';
+import 'package:dosepix/models/listLayout.dart';
 
 // Database
 import 'package:dosepix/database/databaseHandler.dart'
@@ -33,132 +34,58 @@ class _UserSelectState extends State<UserSelect> {
     // Get arguments from call
     final args = ModalRoute.of(context)!.settings.arguments as ModeArguments;
 
+    Widget floatingActionButton = FloatingActionButton.extended(
+      label: Text(
+        'Add user',
+        style: GoogleFonts.nunito(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      icon: Icon(Icons.add),
+      tooltip: 'Add new user',
+      elevation: 0.0,
+      backgroundColor: dosepixColor40,
+      extendedPadding: EdgeInsets.all(40),
+      onPressed: () {
+        // Navigator.pushNamed(context, '/screen/userCreate');
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return UserCreate();
+          }
+        );
+      },
+    );
+
+    Widget body = StreamBuilder(
+      stream: doseDatabase.usersDao.watchUsers(),
+      builder: (c, AsyncSnapshot<List<User>> snapshot) {
+        // print(snapshot.data);
+        // print(snapshot.connectionState);
+        if (snapshot.connectionState == ConnectionState.active &&
+            snapshot.hasData &&
+            snapshot.data != null) {
+          return _buildListViewOfUsers(context, snapshot.data!,
+              activeUsers, measurementCurrent, args);
+        }
+        return Container();
+      }
+    );
+
     return WillPopScope(
       // If selection is aborted, reset user for current measurement
       onWillPop: () {
         measurementCurrent.userId = NO_USER;
         return Future.value(true);
       },
-      child: Scaffold(
-        /* appBar: AppBar(
-          title: Text('Select user'),
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          elevation: 0,
-        ), */
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(200),
-          child: Container(
-            padding: EdgeInsets.only(
-              top: 60,
-              left: 50,
-              right: 50,
-              bottom: 50,
-            ),
-            /* decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color.fromRGBO(104, 185, 234, 1.0),
-                  Color.fromRGBO(177, 235, 249, 0.0),
-                ],
-              ),
-            ), */
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                RichText(
-                  text: TextSpan(
-                    style: GoogleFonts.nunito(
-                      fontSize: 40,
-                      fontWeight: FontWeight.w800,
-                      color: dosepixColor40,
-                    ),
-                    children: [
-                      TextSpan(text: "Select"),
-                      TextSpan(
-                        text: " User",
-                        style: GoogleFonts.nunito(
-                          fontSize: 40,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.account_circle,
-                  color: dosepixColor10,
-                  size: 100,
-                ),
-              ],
-            ),
-          ),
-        ),
-        bottomNavigationBar: BottomAppBar(
-          notchMargin: 0.0,
-          child: Container(
-            alignment: Alignment.bottomLeft,
-            height: 50,
-            margin: EdgeInsets.only(
-              top: 20,
-              bottom: 20,
-              left: 50,
-              right: 50,
-            ),
-            child: IconButton(
-              icon: Icon(
-                Icons.arrow_back_ios,
-              ),
-              iconSize: 30,
-              color: dosepixColor50,
-              onPressed: () {
-                Navigator.maybePop(context);
-              },
-            ),
-          ),
-          color: Colors.transparent,
-          elevation: 0.0,
-        ),
-        floatingActionButton: FloatingActionButton.extended(
-          label: Text(
-            'Add user',
-            style: GoogleFonts.nunito(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          icon: Icon(Icons.add),
-          tooltip: 'Add new user',
-          elevation: 0.0,
-          backgroundColor: dosepixColor40,
-          extendedPadding: EdgeInsets.all(40),
-          onPressed: () {
-            // Navigator.pushNamed(context, '/screen/userCreate');
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return UserCreate();
-              }
-            );
-          },
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        body: StreamBuilder(
-            stream: doseDatabase.usersDao.watchUsers(),
-            builder: (c, AsyncSnapshot<List<User>> snapshot) {
-              // print(snapshot.data);
-              // print(snapshot.connectionState);
-              if (snapshot.connectionState == ConnectionState.active &&
-                  snapshot.hasData &&
-                  snapshot.data != null) {
-                return _buildListViewOfUsers(context, snapshot.data!,
-                    activeUsers, measurementCurrent, args);
-              }
-              return Container();
-            }),
+      child: getListLayout(
+        context,
+        "Select",
+        " User",
+        Icons.account_circle,
+        floatingActionButton,
+        body
       ),
     );
   }

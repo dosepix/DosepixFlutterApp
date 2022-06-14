@@ -122,6 +122,14 @@ class _MeasureState extends State<Measure> {
         elevation: 0,
         actions: [
           IconButton(
+            onPressed: () {
+
+            },
+            icon: Icon(
+              Icons.trending_down,
+            ),
+          ),
+          IconButton(
               onPressed: () {
                 showDialog(
                     context: context,
@@ -227,7 +235,8 @@ class _MeasureState extends State<Measure> {
       DoseDatabase doseDatabase,
       MeasurementModel measurements,
       ActiveUserModel activeUsers,
-      BluetoothModel bluetooth) {
+      BluetoothModel bluetooth
+    ) {
     List<Widget> containers = [];
 
     double deviceWidth = MediaQuery.of(context).size.width;
@@ -245,7 +254,11 @@ class _MeasureState extends State<Measure> {
             ? measurement.totalDose
             : measurement.totalDose / 1000.0;
 
-        LineChart plot = getLineChart(measurement, timeCut: true);
+        LineChart plot = getLineChart(
+          measurement,
+          timeCut: true,
+          useGradient: true,
+        );
         containers.add(
           Expanded(
             flex: 3,
