@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:dosepix/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:dosepix/models/listLayout.dart';
 
 // Database
 import 'package:dosepix/database/databaseHandler.dart'
@@ -78,146 +79,99 @@ class UserCreate extends StatelessWidget {
       );
     }
 
-    return Scaffold(
-      bottomNavigationBar: BottomAppBar(
-        notchMargin: 0.0,
-        child: Row(
-          children: [
-            Container(
-              height: 50,
-              margin: EdgeInsets.only(
-                top: 20,
-                bottom: 20,
-                left: 50,
-                right: 50,
-              ),
-              child: IconButton(
-                icon: Icon(
-                  Icons.clear,
-                ),
-                iconSize: 30,
-                color: dosepixColor50,
-                onPressed: () {
-                  Navigator.maybePop(context);
-                },
-              ),
-            ),
-          ],
-        ),
-        color: Colors.transparent,
-        elevation: 0.0,
+    formFieldContainers.add(
+      const SizedBox(
+        height: 20,
       ),
-      body: Container(
-      padding: EdgeInsets.all(50),
-      child:
-        ListView(
-          children: [
-          Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Create",
-                          style: GoogleFonts.nunito(
-                            fontSize: 40,
-                            fontWeight: FontWeight.w800,
-                            color: dosepixColor40,
-                          ),
-                        ),
-                        Text(
-                          "new User",
-                          style: GoogleFonts.nunito(
-                            fontSize: 40,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Icon(
-                      Icons.person_add,
-                      color: dosepixColor10,
-                      size: 100,
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 30,
-                ),
-                ...formFieldContainers,
-              ],
+    );
+
+    formFieldContainers.add(
+      SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            elevation: 0,
+            padding: EdgeInsets.all(20),
+            textStyle: GoogleFonts.nunito(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+            ),
+            primary: dosepixColor40,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
             ),
           ),
-          const SizedBox(
-            height: 50,
+          onPressed: () {
+            // Check if fields are missing
+            if (!_formKey.currentState!.validate()) {
+              return;
+            }
+
+            // Add new user in registered users
+            // Read values from input fields
+            Map<String, String> inputs = {};
+            for (String key in formFieldKeys) {
+              inputs[key] = formFieldControllers[key]!.text;
+            }
+
+            // Via internal system
+            /*
+            registeredUsers.addNew(
+              fullName: inputs['fullName']!,
+              userName: inputs['userName']!,
+              email: inputs['email']!,
+            );
+            */
+
+            // Via SQL
+            doseDatabase.usersDao.insertUser(UsersCompanion.insert(
+              userName: inputs['userName']!,
+              fullName: inputs['fullName']!,
+              email: inputs['email']!,
+              password: inputs['password']!,
+            ));
+
+            doseDatabase.usersDao.getUsers().then((users) => print(users));
+
+            // Go back to user list
+            Navigator.pop(context);
+          },
+          child: Text(
+            'Register',
           ),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                elevation: 0,
-                padding: EdgeInsets.all(20),
-                textStyle: GoogleFonts.nunito(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                ),
-                primary: dosepixColor40,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              onPressed: () {
-                // Check if fields are missing
-                if (!_formKey.currentState!.validate()) {
-                  return;
-                }
+        ),
+      ),
+    );
 
-                // Add new user in registered users
-                // Read values from input fields
-                Map<String, String> inputs = {};
-                for (String key in formFieldKeys) {
-                  inputs[key] = formFieldControllers[key]!.text;
-                }
+    Form listView = Form(
+      key: _formKey,
+      child: ListView(
+        padding: const EdgeInsets.only(
+          left: 50,
+          right: 50,
+          top: 10,
+          bottom: 10,
+        ),
+        children: <Widget>[
+          ...formFieldContainers,
+        ],
+      ),
+    );
 
-                // Via internal system
-                /*
-                registeredUsers.addNew(
-                  fullName: inputs['fullName']!,
-                  userName: inputs['userName']!,
-                  email: inputs['email']!,
-                );
-               */
-
-                // Via SQL
-                doseDatabase.usersDao.insertUser(UsersCompanion.insert(
-                  userName: inputs['userName']!,
-                  fullName: inputs['fullName']!,
-                  email: inputs['email']!,
-                  password: inputs['password']!,
-                ));
-
-                doseDatabase.usersDao.getUsers().then((users) => print(users));
-
-                // Go back to user list
-                Navigator.pop(context);
-              },
-              child: Text(
-                'Register',
-              ),
-            ),
-          ),
-         ],
+    return AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(20)),
+      ),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      content: Container(
+        width: double.maxFinite,
+        child: getListLayout(
+          context,
+          "Create",
+          " User",
+          Icons.group_add,
+          SizedBox.shrink(),
+          listView,
         ),
       ),
     );

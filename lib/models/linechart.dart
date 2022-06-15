@@ -61,18 +61,18 @@ LineChart generateLineChart(
     bool showSingle=false,
   }
   ) {
-
   return LineChart(
     LineChartData(
       borderData: FlBorderData(
         show: true,
         border: Border(
-            left: BorderSide(
-              color: Colors.black.withOpacity(0.6),
-            ),
-            bottom: BorderSide(
-              color: Colors.black.withOpacity(0.6),
-            )),
+          left: BorderSide(
+            color: Colors.black.withOpacity(0.6),
+          ),
+          bottom: BorderSide(
+            color: Colors.black.withOpacity(0.6),
+          ),
+        ),
       ),
       titlesData: FlTitlesData(
         show: true,
@@ -149,7 +149,9 @@ LineChart generateLineChart(
       // minX: plotData.isEmpty ? 0 : plotData.last.time.roundToDouble(),
       // maxX:
       //     plotData.isEmpty ? 0 : plotData.first.time.roundToDouble(), // + 60.0,
-      lineTouchData: LineTouchData(enabled: false),
+      lineTouchData: LineTouchData(
+        enabled: showSingle,
+      ),
       clipData: FlClipData.all(),
       gridData: FlGridData(
         show: true,
@@ -180,13 +182,27 @@ LineChart getLineChart(
     plotData = measurement.selectTimeRange(60.0);
   }
 
+  /*
+  List<MeasurementDataPoint> plotDataDifference = [];
+  for (int idx=0; idx < plotData.length - 1; idx++) {
+    double doseDiff = (plotData[idx].dose - plotData[idx+1].dose) / (plotData[idx].time - plotData[idx+1].time);
+    plotDataDifference.add(
+      MeasurementDataPoint(
+        plotData[idx].time,
+        doseDiff,
+      ),
+    );
+  }
+  plotData = plotDataDifference;
+  */
+
   double doseInterval = getDoseInterval(plotData);
   List<Color> gradientColors = [
     dosepixColor20.withAlpha(20),
     dosepixColor40.withAlpha(100),
     dosepixColor50.withAlpha(200),
   ];
-  
+
   Gradient gradient = useGradient 
     ? LinearGradient(
       colors: gradientColors,

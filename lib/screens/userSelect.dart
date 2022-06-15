@@ -49,12 +49,12 @@ class _UserSelectState extends State<UserSelect> {
       extendedPadding: EdgeInsets.all(40),
       onPressed: () {
         // Navigator.pushNamed(context, '/screen/userCreate');
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return UserCreate();
-          }
-        );
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return UserCreate();
+              }
+            );
       },
     );
 
@@ -128,10 +128,14 @@ class _UserSelectState extends State<UserSelect> {
 
           if (args.arg == MODE_ANALYZE) {
             MeasurementSelectArguments arguments = MeasurementSelectArguments(
-                MODE_ANALYZE, '/screen/measInfo', user.id);
+              MODE_ANALYZE,
+              '/screen/measInfo',
+              user.id,
+              user.userName,
+            );
             Navigator.pushNamed(
               context,
-              '/screen/measurementSelect',
+              '/screen/userSummary',
               arguments: arguments,
             );
           } else {

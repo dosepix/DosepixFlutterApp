@@ -105,7 +105,7 @@ Scaffold getListLayout(
               Theme.of(context).scaffoldBackgroundColor,
               Theme.of(context).scaffoldBackgroundColor,
             ],
-          )
+          ),
         ),
         alignment: Alignment.bottomLeft,
         height: 80,
@@ -118,7 +118,10 @@ Scaffold getListLayout(
           left: 50,
           right: 50,
         ),
-        child: IconButton(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(
           icon: Icon(
             Icons.arrow_back_ios,
           ),
@@ -127,6 +130,23 @@ Scaffold getListLayout(
           onPressed: () {
             Navigator.maybePop(context);
           },
+            ),
+            
+            IconButton(
+          icon: Icon(
+            Icons.home,
+          ),
+          iconSize: 30,
+          color: dosepixColor50,
+          onPressed: () {
+            Navigator.pushNamedAndRemoveUntil(
+            context, 
+            "/", 
+            ModalRoute.withName("/"),
+          );
+          },
+            ),
+            ],
         ),
       ),
       color: Colors.transparent,

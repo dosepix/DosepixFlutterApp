@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dosepix/models/mode.dart';
-import 'package:dosepix/screens/measInfo.dart';
 
 class Home extends StatelessWidget {
   @override

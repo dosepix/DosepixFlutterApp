@@ -14,7 +14,13 @@ import 'package:dosepix/database/databaseHandler.dart'
 
 class MeasurementSelectArguments extends ModeArguments {
   final int userId;
-  MeasurementSelectArguments(arg, next, this.userId) : super(arg, next);
+  final String userName;
+  MeasurementSelectArguments(
+    arg,
+    next,
+    this.userId,
+    this.userName
+  ) : super(arg, next);
 }
 
 class MeasurementSelect extends StatefulWidget {

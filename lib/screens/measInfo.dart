@@ -147,7 +147,8 @@ class MeasInfo extends StatelessWidget {
               ),
             ),
           ],
-        )),
+        ),
+        ),
       ],
     );
 
